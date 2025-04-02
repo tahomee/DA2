@@ -104,21 +104,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   padding: const EdgeInsets.all(20.0),
                   child: ElevatedButton(
                     style: ButtonStyle(
-                      textStyle: MaterialStateProperty.all<TextStyle>(
+                      textStyle: WidgetStateProperty.all<TextStyle>(
                         const TextStyle(fontSize: 20),
                       ),
-                      foregroundColor: MaterialStateProperty.resolveWith<Color>(
-                        (Set<MaterialState> states) {
-                          if (states.contains(MaterialState.pressed)) {
+                      foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.pressed)) {
                             return Colors.orange;
                           }
                           return Colors.black;
                         },
                       ),
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                           Constants.lightgreen),
                       minimumSize:
-                          MaterialStateProperty.all<Size>(const Size(120, 50)),
+                          WidgetStateProperty.all<Size>(const Size(120, 50)),
                     ),
                     onPressed: () {
                       increaseCount(
@@ -135,21 +135,21 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   padding: const EdgeInsets.all(20.0),
                   child: ElevatedButton(
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.resolveWith<Color>(
-                        (Set<MaterialState> states) {
-                          if (states.contains(MaterialState.pressed)) {
+                      foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.pressed)) {
                             return Colors.orange; // Màu đỏ khi nhấn
                           }
                           return Colors.black; // Màu mặc định khi không nhấn
                         },
                       ),
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                           Constants.lightgreen),
-                      textStyle: MaterialStateProperty.all<TextStyle>(
+                      textStyle: WidgetStateProperty.all<TextStyle>(
                         const TextStyle(fontSize: 20),
                       ),
                       minimumSize:
-                          MaterialStateProperty.all<Size>(const Size(120, 50)),
+                          WidgetStateProperty.all<Size>(const Size(120, 50)),
                     ),
                     onPressed: () {
                       increaseCount(

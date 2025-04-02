@@ -40,7 +40,51 @@ void getAllPlaceFood(String collection) {
       }
     });
   });
-}
+// }
+// void getAllPlaceFood(String collection) async {
+//   try {
+//     CollectionReference place = FirebaseFirestore.instance.collection(collection);
+//     QuerySnapshot snapshot = await place.get();
+//
+//     print("📢 Tổng số documents trong $collection: ${snapshot.docs.length}");
+//
+//     for (var documentSnapshot in snapshot.docs) {
+//       if (documentSnapshot.exists) {
+//         Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+//         print("🔥 Dữ liệu từ Firebase: $data");
+//
+//         Place tmpPlace = Place(
+//           id: data['id'],
+//           name: data['name'],
+//           address: data['address'],
+//           rating: data['rating'],
+//           img: data['image'],
+//           price: data['price'],
+//           history: data['history'],
+//           duration: data['duration'],
+//           city: data['city'],
+//           closeTime: data['closetime'],
+//           district: data['district'],
+//           openTime: data['opentime'],
+//         );
+//
+//         if (collection == 'stourplace1') {
+//           if (places.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
+//             places.add(tmpPlace);
+//             print("✅ Đã thêm địa điểm: ${tmpPlace.name}");
+//           }
+//         } else {
+//           if (food.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
+//             food.add(tmpPlace);
+//             print("✅ Đã thêm món ăn: ${tmpPlace.name}");
+//           }
+//         }
+//       }
+//     }
+//   } catch (e) {
+//     print("❌ Lỗi khi lấy dữ liệu từ Firestore ($collection): $e");
+//   }
+ }
 
 class SearchByNameWidget extends StatelessWidget {
   final String searchQuery;
@@ -57,6 +101,15 @@ class SearchByNameWidget extends StatelessWidget {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         }
+        FirebaseFirestore.instance
+            .collection('stourplace1')
+            .snapshots()
+            .listen((snapshot) {
+          print("📢 Tổng số documents: ${snapshot.docs.length}");
+          for (var doc in snapshot.docs) {
+            print("🔥 Dữ liệu: ${doc.data()}");
+          }
+        });
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();

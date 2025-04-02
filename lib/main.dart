@@ -6,11 +6,13 @@ import 'screens/splash_screen.dart';
 import 'package:stour/model/place.dart';
 import 'package:stour/screens/home.dart';
 import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
 );
+
   getAllPlaceFood('stourplace1');
   getAllPlaceFood('cuisines');
   const GoogleMapsController();

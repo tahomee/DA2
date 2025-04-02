@@ -1,0 +1,83 @@
+{
+  "food": {
+
+    "food2": {
+      "name": "Banh Mi",
+      "image": "https://example.com/banhmi.jpg",
+      "rating": 4.7
+    },
+    "food3": {
+      "name": "Bun Bo Hue",
+      "image": "https://example.com/bunbohue.jpg",
+      "rating": 4.9
+    }
+  },
+  "reviews": {
+    "review1": {
+      "id": "1",
+      "user": "John Doe",
+      "user_img": "https://example.com/john.jpg",
+      "name": "Pho",
+      "idLocation": "food2",
+      "content": "Delicious!",
+      "score": 5,
+      "createdAt": "2024-03-29T10:00:00Z",
+      "updatedAt": "2024-03-29T10:00:00Z"
+    },
+    "review2": {
+      "id": "2",
+      "user": "Alice",
+      "user_img": "https://example.com/alice.jpg",
+      "name": "Banh Mi",
+      "idLocation": "food3",
+      "content": "So crispy and tasty!",
+      "score": 4.9,
+      "createdAt": "2024-03-29T12:00:00Z",
+      "updatedAt": "2024-03-29T12:00:00Z"
+    }
+  },
+  "stourplace1": {
+    "place1": {
+      "id": "p1",
+      "name": "Ha Long Bay",
+      "address": "Quang Ninh, Vietnam",
+      "rating": 4.9,
+      "image": "https://example.com/halong.jpg",
+      "price": 30,
+      "history": "Famous UNESCO World Heritage Site",
+      "duration": "Full day",
+      "city": "Ha Long",
+      "district": "Bai Chay",
+      "openTime": "08:00",
+      "closeTime": "18:00"
+    },
+    "place2": {
+      "id": "p2",
+      "name": "Hoi An Ancient Town",
+      "address": "Quang Nam, Vietnam",
+      "rating": 4.8,
+      "image": "https://example.com/hoian.jpg",
+      "price": 15,
+      "history": "Well-preserved ancient town",
+      "duration": "Half day",
+      "city": "Hoi An",
+      "district": "Minh An",
+      "openTime": "07:00",
+      "closeTime": "22:00"
+    },
+    "place3": {
+      "id": "p3",
+      "name": "Phong Nha Cave",
+      "address": "Quang Binh, Vietnam",
+      "rating": 4.7,
+      "image": "https://example.com/phongnha.jpg",
+      "price": 20,
+      "history": "One of the largest cave systems",
+      "duration": "Full day",
+      "city": "Phong Nha",
+      "district": "Son Trach",
+      "openTime": "07:30",
+      "closeTime": "17:30"
+    }
+  }
+}

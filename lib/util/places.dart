@@ -26,6 +26,7 @@ class Place {
     required this.openTime,
     required this.closeTime,
   });
+
 }
 
 class SavedTourClass {
@@ -41,6 +42,18 @@ class SavedTourClass {
 
 List<String> currentLocationDetail = [];
 
-List<Place> places = [];
-List<Place> food = [];
-List<SavedTourClass> savedTour = [];
+
+// Địa điểm du lịch
+List<Place> places = [
+
+];
+
+// Địa điểm ẩm thực
+List<Place> food = [
+
+];
+
+// Tour đã lưu
+List<SavedTourClass> savedTour = [
+
+];
