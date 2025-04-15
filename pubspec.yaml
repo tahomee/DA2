@@ -51,10 +51,10 @@ dependencies:
   timeline_tile: ^2.0.0
   flutter_rounded_date_picker: ^3.0.3
   firebase_storage: ^11.5.6
-
+  url_launcher: ^6.1.7
   drag_and_drop_lists: ^0.3.3
   uuid: ^3.0.7
-
+  flutter_svg: ^2.0.10
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -75,7 +75,14 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: lib/assets/fonts/Montserrat-Regular.otf
+        - asset: lib/assets/fonts/Montserrat-Bold.otf
+          weight: 700
+        - asset: lib/assets/fonts/Montserrat-SemiBold.otf
+          weight: 600
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets\img\BaoTangMyThuat\Bao-tang-My-thuat-TP-HCM-ivivu.jpg

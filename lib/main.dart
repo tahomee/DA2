@@ -32,6 +32,9 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: Constants.appName,
       home: const SplashScreen(),
+      theme: ThemeData(
+        fontFamily: 'Montserrat',
+      ),
       routes: {
         '/home': (context) => const MainScreen(),
       },

@@ -4,54 +4,57 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stour/util/places.dart';
 import 'package:collection/collection.dart';
+Future<List<Place>> getAllPlaceFood(String collection) async {
+  List<Place> results = [];
 
-void getAllPlaceFood(String collection) {
-  CollectionReference place = FirebaseFirestore.instance.collection(collection);
-  place.get().then((QuerySnapshot snapshot) {
-    snapshot.docs.forEach((DocumentSnapshot documentSnapshot) {
+
+  try {
+    CollectionReference place = FirebaseFirestore.instance.collection(collection);
+    QuerySnapshot snapshot = await place.get();
+
+    for (var documentSnapshot in snapshot.docs) {
       if (documentSnapshot.exists) {
-        Map<String, dynamic> data =
-            documentSnapshot.data() as Map<String, dynamic>;
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        print(data);
+
         Place tmpPlace = Place(
-          id: data['id'],
-          name: data['name'],
-          address: data['address'],
-          rating: data['rating'],
-          img: data['image'],
-          price: data['price'],
-          history: data['history'],
-          duration: data['duration'],
-          city: data['city'],
-          closeTime: data['closetime'],
-          district: data['district'],
-          openTime: data['opentime'],
+          id: data['id'] ?? '',
+          name: data['name'] ?? '',
+          address: data['address'] ?? '',
+          rating: data['rating']?.toString() ?? '0.0', //  double → string
+          img: data['image'] ?? '',
+          price: data['price'] ?? 0,
+          history: data['history'] ?? '',
+          duration: data['duration'] ?? 0,
+          city: data['city'] ?? '',
+          closeTime: data['closetime'] ?? 0,
+          district: data['district'] ?? '',
+          openTime: data['opentime'] ?? 0,
         );
-        if (collection == 'stourplace1') {
-          if (places.firstWhereOrNull((element) => element.id == tmpPlace.id) ==
-              null) {
-            places.add(tmpPlace);
-          }
-        } else {
-          if (food.firstWhereOrNull((element) => element.id == tmpPlace.id) ==
-              null) {
-            food.add(tmpPlace);
-          }
+        // Kiểm tra trùng ID
+        if (results.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
+          results.add(tmpPlace);
         }
       }
-    });
-  });
-// }
-// void getAllPlaceFood(String collection) async {
-//   try {
-//     CollectionReference place = FirebaseFirestore.instance.collection(collection);
-//     QuerySnapshot snapshot = await place.get();
+    }
+  } catch (e) {
+    print("❌ Lỗi khi lấy dữ liệu từ Firestore ($collection): $e");
+
+  }
+
+  return results;
+}
+
+// void getAllPlaceFood(String collection) {
+//   CollectionReference place = FirebaseFirestore.instance.collection(collection);
+//   place.get().then((QuerySnapshot snapshot) {
 //
-//     print("📢 Tổng số documents trong $collection: ${snapshot.docs.length}");
-//
-//     for (var documentSnapshot in snapshot.docs) {
+//     snapshot.docs.forEach((DocumentSnapshot documentSnapshot) {
 //       if (documentSnapshot.exists) {
-//         Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-//         print("🔥 Dữ liệu từ Firebase: $data");
+//         Map<String, dynamic> data =
+//             documentSnapshot.data() as Map<String, dynamic>;
+//         print("⏰ openTime kiểu: ${data['opentime']} (${data['opentime'].runtimeType})");
+//         print(" dữ liệu: ${data} ");
 //
 //         Place tmpPlace = Place(
 //           id: data['id'],
@@ -67,24 +70,22 @@ void getAllPlaceFood(String collection) {
 //           district: data['district'],
 //           openTime: data['opentime'],
 //         );
-//
 //         if (collection == 'stourplace1') {
-//           if (places.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
+//           if (places.firstWhereOrNull((element) => element.id == tmpPlace.id) ==
+//               null) {
 //             places.add(tmpPlace);
-//             print("✅ Đã thêm địa điểm: ${tmpPlace.name}");
 //           }
 //         } else {
-//           if (food.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
+//           if (food.firstWhereOrNull((element) => element.id == tmpPlace.id) ==
+//               null) {
 //             food.add(tmpPlace);
-//             print("✅ Đã thêm món ăn: ${tmpPlace.name}");
 //           }
 //         }
 //       }
-//     }
-//   } catch (e) {
-//     print("❌ Lỗi khi lấy dữ liệu từ Firestore ($collection): $e");
-//   }
- }
+//     });
+//   });
+//
+//  }
 
 class SearchByNameWidget extends StatelessWidget {
   final String searchQuery;

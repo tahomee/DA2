@@ -42,21 +42,78 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return 2;
   }
 
+  // List<List<Place>> getData() {
+  //   List<List<Place>> locations = [];
+  //   for (int i = 0; i < places.length; i++) {
+  //     if (places[i].closeTime <
+  //             (widget.startTime.hour + widget.startTime.minute / 60) ||
+  //         places[i].openTime >
+  //             (widget.endTime.hour + widget.endTime.minute / 60) ||
+  //         places[i].city != currentLocationDetail[1]) {
+  //       continue;
+  //     }
+  //     Place tmpFood = food[i % food.length];
+  //     tmpFood.id = const Uuid().v4();
+  //
+  //     locations.add([places[i], tmpFood]);
+  //   }
+  //   return locations;
+  // }
+
+  // List<List<Place>> executeAlgo() {
+  //   double budget = widget.maxBudget;
+  //   int interval =
+  //       widget.returnDate.difference(widget.departureDate).inDays + 1;
+  //   double tMinus = (widget.endTime.hour + widget.endTime.minute / 60) -
+  //       (widget.startTime.hour + widget.startTime.minute / 60);
+  //   List<List<Place>> placesList = getData();
+  //   List<List<Place>> res = [];
+  //   double tmpTime = tMinus;
+  //   while (interval-- > 0 && placesList.isNotEmpty) {
+  //     List<Place> tmpList = [];
+  //     placesList = placesList.where((placePair) {
+  //       int firstRes = _isValid(budget, tmpTime, placePair[0]);
+  //       if (firstRes == 0) {
+  //         return false;
+  //       } else if (firstRes == 1) {
+  //         return true;
+  //       } else {
+  //         tmpList.add(placePair[0]);
+  //         budget -= placePair[0].price;
+  //         tmpTime -= placePair[0].duration;
+  //         if (_isValid(budget, tmpTime, placePair[1]) == 2) {
+  //           tmpList.add(placePair[1]);
+  //           budget -= placePair[1].price;
+  //           tmpTime -= placePair[1].duration;
+  //         }
+  //         return false;
+  //       }
+  //     }).toList();
+  //     tmpTime = tMinus;
+  //     res.add(tmpList);
+  //   }
+  //   return res;
+  // }
   List<List<Place>> getData() {
     List<List<Place>> locations = [];
     for (int i = 0; i < places.length; i++) {
+      print("Check place: ${places[i].name} ở ${places[i].city} - mở từ ${places[i].openTime} đến ${places[i].closeTime}");
+
       if (places[i].closeTime <
-              (widget.startTime.hour + widget.startTime.minute / 60) ||
+          (widget.startTime.hour + widget.startTime.minute / 60) ||
           places[i].openTime >
               (widget.endTime.hour + widget.endTime.minute / 60) ||
           places[i].city != currentLocationDetail[1]) {
+        print(" -> Bị loại");
         continue;
       }
+
       Place tmpFood = food[i % food.length];
       tmpFood.id = const Uuid().v4();
 
       locations.add([places[i], tmpFood]);
     }
+    print(">> Số cặp địa điểm còn lại: ${locations.length}");
     return locations;
   }
 
@@ -68,6 +125,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         (widget.startTime.hour + widget.startTime.minute / 60);
     List<List<Place>> placesList = getData();
     List<List<Place>> res = [];
+
+    print(">> Số ngày: $interval");
+    print(">> Budget: $budget");
+    print(">> Time mỗi ngày: $tMinus");
+    print(">> Danh sách địa điểm lọc được từ getData(): ${placesList.length}");
+    for (var pair in placesList) {
+      print("- ${pair[0].name} (${pair[0].price}đ / ${pair[0].duration}h), ${pair[1].name} (${pair[1].price}đ / ${pair[1].duration}h)");
+    }
+
     double tmpTime = tMinus;
     while (interval-- > 0 && placesList.isNotEmpty) {
       List<Place> tmpList = [];
@@ -90,8 +156,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         }
       }).toList();
       tmpTime = tMinus;
+      print("Ngày ${res.length + 1}: ${tmpList.length} địa điểm");
       res.add(tmpList);
     }
+    print(">> Tổng số ngày có lịch trình: ${res.length}");
     return res;
   }
 
@@ -113,14 +181,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           title: const Text(
             'Lịch Trình Dành Cho Bạn',
             style: TextStyle(
-              color: Color.fromARGB(255, 35, 52, 10),
+              color: Color(0xFF3B6332),
             ),
           ),
           backgroundColor: Constants.lightgreen,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back,
                 color:
-                    Color.fromARGB(255, 35, 52, 10)), // Change the color here
+                Color(0xFF3B6332)), // Change the color here
             onPressed: () {
               // Handle back button logic
               Navigator.pop(context);

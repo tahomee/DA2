@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:stour/util/const.dart';
 import 'package:stour/util/places.dart';
 import 'package:flutter/services.dart';
 import 'package:stour/screens/review_screen.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key, required this.placeToDisplay});
   final Place placeToDisplay;
@@ -20,6 +22,32 @@ class _DetailScreenState extends State<DetailScreen> {
   bool hasLiked = false;
   Color buttonColor = Colors.black;
   Icon initialFavIcon = const Icon(Icons.favorite_border, size: 30);
+
+  Future<void> _openGoogleMaps(String destinationAddress) async {
+    try {
+      // Get the user's current location
+      Position position = await Geolocator.getCurrentPosition();
+      double currentLatitude = position.latitude;
+      double currentLongitude = position.longitude;
+
+      // Build the Google Maps URL
+      String googleMapsUrl =
+          'https://www.google.com/maps/dir/?api=1&origin=$currentLatitude,$currentLongitude&destination=${Uri.encodeComponent(destinationAddress)}&travelmode=driving';
+
+      // Launch the URL
+      final Uri url = Uri.parse(googleMapsUrl);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not open Google Maps.';
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
@@ -97,14 +125,20 @@ class _DetailScreenState extends State<DetailScreen> {
                     size: 25,
                   ),
                   const SizedBox(width: 5),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Text(
-                        widget.placeToDisplay.address,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          color: const Color.fromARGB(255, 44, 105, 224),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    _openGoogleMaps(widget.placeToDisplay.address);
+                  },
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                      widget.placeToDisplay.address,
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: const Color.fromARGB(255, 44, 105, 224),
+                        decoration: TextDecoration.underline,
+                         ),
                         ),
                       ),
                     ),

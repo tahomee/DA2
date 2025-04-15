@@ -1,7 +1,11 @@
 import "package:flutter/material.dart";
+import "package:flutter_svg/svg.dart";
 import "package:stour/util/const.dart";
 import "package:stour/widgets/search_card.dart";
 import 'package:stour/screens/coupon_screen.dart';
+
+import "../assets/icons/search_svg.dart";
+import "../assets/icons/voucher_svg.dart";
 
 class HomeAppBar extends StatelessWidget {
   const HomeAppBar({super.key});
@@ -30,17 +34,12 @@ class HomeAppBar extends StatelessWidget {
             },
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Constants.lightgreen,
-                boxShadow: [
-                  BoxShadow(color: Constants.ratingBG, blurRadius: 10),
-                ],
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                Icons.discount_outlined,
-                color: Color.fromARGB(255, 35, 52, 10),
-                size: 24,
+
+              child:
+                SvgPicture.string(
+                  voucherSVG,
+
+
               ),
             ),
           ),
@@ -51,24 +50,14 @@ class HomeAppBar extends StatelessWidget {
             },
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Constants.lightgreen,
-                boxShadow: [
-                  BoxShadow(
-                    color: Constants.ratingBG,
-                    blurRadius: 10,
-                  ),
-                ],
-                borderRadius: BorderRadius.circular(16),
-              ),
+
               child: GestureDetector(
                 onTap: () {
                   buildSearchBar(context);
                 },
-                child: const Icon(
-                  Icons.search,
-                  color: Color.fromARGB(255, 35, 52, 10),
-                  size: 24,
+                child:  SvgPicture.string(
+                  searchSVG,
+
                 ),
               ),
             ),

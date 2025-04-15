@@ -4,6 +4,10 @@ import 'package:stour/screens/home.dart';
 import 'package:stour/widgets/timeline.dart';
 import 'package:stour/util/const.dart';
 import 'package:stour/screens/profile.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:stour/assets/icons/timeline_svg.dart';
+import 'package:stour/assets/icons/home_svg.dart';
+import 'package:stour/assets/icons/account_svg.dart';
 
 List icons = [
   Icons.timeline_outlined,
@@ -76,13 +80,25 @@ class HomeBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CurvedNavigationBar(
-      backgroundColor: Constants.ratingBG,
-      buttonBackgroundColor: Constants.darkgreen,
+      backgroundColor: Constants.navBG,
+      buttonBackgroundColor: Constants.navBG,
       index: 1,
       items: [
-        Icon(icons[0], size: 30, color: Constants.lightgreen),
-        Icon(icons[1], size: 30, color: Constants.lightgreen),
-        Icon(icons[2], size: 30, color: Constants.lightgreen),
+      SvgPicture.string(
+      timelineSVG,
+      height: 30,
+      width: 30,
+    ),
+      SvgPicture.string(
+      homeSVG,
+      height: 30,
+      width: 30,
+    ),
+      SvgPicture.string(
+      accountSVG,
+      height: 30,
+      width: 30,
+    )
       ],
       onTap: onTap,
     );
