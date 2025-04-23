@@ -7,6 +7,7 @@ import 'package:stour/screens/saved_tour.dart';
 import 'package:stour/assets/icons/bio_svg.dart' as BioIcon;
 import 'package:stour/assets/icons/locate_svg.dart' as LocateIcon;
 import 'package:stour/widgets/profile_img.dart';
+import 'package:stour/screens/addPost_screen.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -71,7 +72,14 @@ class _ProfileState extends State<Profile> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildActionButton("Thêm bài viết"),
+            _buildActionButton("Thêm bài viết", onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddPostScreen(),
+                ),
+              );
+            }),
             _buildActionButton("Lịch trình đã lưu", onPressed: () {
               Navigator.push(
                 context,
