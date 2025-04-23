@@ -30,24 +30,28 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery
-        .of(context)
-        .size;
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 9.0),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                profileImage(size),
-                profileInfo(),
-                profileActivity(),
-                profileEvents(size),
-                _pages[_selectedEvent],
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    profileImage(size),
+                    profileInfo(),
+                    profileActivity(),
+                    profileEvents(size),
+                  ],
+                ),
+              ),
             ),
-          ),
+            SizedBox(
+              height: 300, // hoặc dùng Expanded nếu PostScreen cần full height
+              child: _pages[_selectedEvent],
+            ),
+          ],
         ),
       ),
     );
