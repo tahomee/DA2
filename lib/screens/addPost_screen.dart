@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/cloudinary_service.dart';
+import 'package:stour/assets/icons/send_svg.dart' as sendIcon;
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -52,7 +54,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         'location': _locationController.text,
         'imageUrls': imageUrls,
         'createdAt': Timestamp.now(),
-        'authorId': 'current_user_id', // Thay bằng ID user thực tế
+        'authorId': 'current_user_id',
         'likes': 0,
         'comments': 0,
       });
@@ -89,13 +91,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('THÊM BÀI VIẾT', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('THÊM BÀI VIẾT', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: _isPosting ? null : _submitPost,
             child: _isPosting
                 ? const CircularProgressIndicator()
-                : const Text('Đăng', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                // : const Text('Đăng', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                  : SvgPicture.string(sendIcon.sendSVG, height: 40, width: 40),
           ),
         ],
       ),
@@ -115,7 +118,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("HBT", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text("HBT", style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
                     Text("Bây giờ", style: TextStyle(color: Colors.grey[600])),
                   ],
                 ),
@@ -132,18 +135,18 @@ class _AddPostScreenState extends State<AddPostScreen> {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
-            const Text('Địa điểm', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Địa điểm', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _locationController,
               decoration: InputDecoration(
-                hintText: 'Cù Lao Tân Lộc - Vuôn Dừa',
+                hintText: 'Chọn địa điểm...',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                prefixIcon: const Icon(Icons.location_on),
+                prefixIcon: const Icon(Icons.location_on, color: Color(0xFFFFD166)),
               ),
             ),
             const SizedBox(height: 20),
-            const Text('File đính kèm', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('File đính kèm', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             // Hiển thị danh sách ảnh đã chọn
             if (_selectedImages.isNotEmpty)
@@ -200,7 +203,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate, size: 40),
+                      Icon(Icons.add_photo_alternate, size: 30, color: Color(0xFFFFD166)),
                       SizedBox(height: 8),
                       Text('Thêm ảnh'),
                     ],
