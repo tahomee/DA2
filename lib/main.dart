@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:stour/screens/main_screen.dart';
 import 'package:stour/util/const.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:stour/util/places.dart';
 import 'screens/splash_screen.dart';
 import 'package:stour/model/place.dart';
 import 'package:stour/screens/home.dart';
 import 'firebase_options.dart';
+import 'package:stour/screens/sign_in.dart';
+import 'package:stour/screens/sign_up.dart';
 import 'package:stour/screens/createMiniGame_screen.dart';
-import 'package:stour/screens/addPlace_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +18,7 @@ void main() async {
 );
 
   getAllPlaceFood('stourplace1');
-  getAllPlaceFood('cuisines');
+  getAllPlaceFood('food');
   const GoogleMapsController();
   runApp(const MyApp());
 }
@@ -39,8 +41,8 @@ class _MyAppState extends State<MyApp> {
       ),
       routes: {
         '/home': (context) => const MainScreen(),
-        // '/home': (context) => CreateMinigameScreen(),
-        // '/home': (context) => AddPlaceScreen(),
+        '/signin': (context) => const SignInScreen(),
+        '/signup': (context) => const SignUpScreen(),
       },
     );
   }

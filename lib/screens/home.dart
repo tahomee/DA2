@@ -116,13 +116,13 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  late Future<List<Place>> futurePlaces;
-  late Future<List<Place>> futureFood;
+  late Future<List<Place>> places;
+  late Future<List<Place>> food;
   @override
   void initState() {
     super.initState();
-    futurePlaces = getAllPlaceFood('stourplace1');
-    futureFood = getAllPlaceFood('food');
+    places = getAllPlaceFood('stourplace1');
+    food = getAllPlaceFood('food');
   }
 
   @override
@@ -163,7 +163,7 @@ class _HomeState extends State<Home> {
                 ),
                 const SizedBox(height: 20.0),
                 FutureBuilder<List<Place>>(
-                  future: futurePlaces,
+                  future: places,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -185,7 +185,7 @@ class _HomeState extends State<Home> {
                 ),
                 const SizedBox(height: 5.0),
                 FutureBuilder<List<Place>>(
-                  future: futureFood,
+                  future: food,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());

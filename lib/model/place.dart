@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stour/util/places.dart';
 import 'package:collection/collection.dart';
+
 Future<List<Place>> getAllPlaceFood(String collection) async {
-  List<Place> results = [];
-
-
   try {
     CollectionReference place = FirebaseFirestore.instance.collection(collection);
     QuerySnapshot snapshot = await place.get();
@@ -15,13 +13,12 @@ Future<List<Place>> getAllPlaceFood(String collection) async {
     for (var documentSnapshot in snapshot.docs) {
       if (documentSnapshot.exists) {
         Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-        print(data);
 
         Place tmpPlace = Place(
           id: data['id'] ?? '',
           name: data['name'] ?? '',
           address: data['address'] ?? '',
-          rating: data['rating']?.toString() ?? '0.0', //  double → string
+          rating: data['rating']?.toString() ?? '0.0',
           img: data['image'] ?? '',
           price: data['price'] ?? 0,
           history: data['history'] ?? '',
@@ -31,18 +28,37 @@ Future<List<Place>> getAllPlaceFood(String collection) async {
           district: data['district'] ?? '',
           openTime: data['opentime'] ?? 0,
         );
-        // Kiểm tra trùng ID
-        if (results.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
-          results.add(tmpPlace);
+
+        if (collection == 'stourplace1') {
+          if (places.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
+            places.add(tmpPlace);
+          }
+        } else {
+          if (food.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
+            food.add(tmpPlace);
+          }
         }
       }
     }
   } catch (e) {
-    print("❌ Lỗi khi lấy dữ liệu từ Firestore ($collection): $e");
-
+    print("❌ Error fetching data from Firestore ($collection): $e");
   }
 
-  return results;
+  return collection == 'stourplace1' ? places : food;
+}
+void printPlaces() {
+  if (places.isEmpty) {
+    print('📭 Không có địa điểm nào trong danh sách.');
+    return;
+  }
+
+  print('📍 Danh sách địa điểm:');
+  places.forEach((place) {
+    print('🧭 ${place.name} - ${place.address} (${place.city}, ${place.district})');
+    print('⭐ Rating: ${place.rating} | 💰 Giá: ${place.price} | 🕒 Giờ mở cửa: ${place.openTime} - ${place.closeTime}');
+    print('🖼 Hình ảnh: ${place.img}');
+    print('---');
+  });
 }
 
 

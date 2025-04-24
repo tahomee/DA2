@@ -41,9 +41,8 @@ class _ModifyTimelineState extends State<ModifyTimeline> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
-              color: Color.fromARGB(255, 35, 52, 10)), // Change the color here
+              color: Color.fromARGB(255, 35, 52, 10)),
           onPressed: () {
-            // Handle back button logic
             Navigator.pop(context);
           },
         ),
@@ -85,8 +84,8 @@ class _ModifyTimelineState extends State<ModifyTimeline> {
               ),
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 650,
+            /// ✅ Dùng Expanded để chiếm phần còn lại của chiều cao
+            Expanded(
               child: ReorderableListView.builder(
                 itemCount: widget.placeList.length,
                 itemBuilder: (BuildContext context, int index) {

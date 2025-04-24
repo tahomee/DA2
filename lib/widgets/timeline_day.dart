@@ -31,6 +31,7 @@ class _TimelineDayState extends State<TimelineDay> {
       totalCost += widget.placesToGo[i].price;
     }
     return Padding(
+
       padding: const EdgeInsets.only(left: 10),
       child: Column(
         children: [
