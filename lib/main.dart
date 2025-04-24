@@ -41,6 +41,8 @@ class _MyAppState extends State<MyApp> {
       ),
       routes: {
         '/home': (context) => const MainScreen(),
+        '/signin': (context) => const SignInScreen(),
+        '/signup': (context) => const SignUpScreen(),
       },
     );
   }
