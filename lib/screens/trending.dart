@@ -11,7 +11,7 @@ class Trending extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: const Color(0xFFc3ff68),
+        backgroundColor: Colors.white,
         title: const Text(
           "Địa Điểm Văn Hóa",
           style: TextStyle(

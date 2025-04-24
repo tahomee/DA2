@@ -29,8 +29,10 @@ class _ViewSavedTourState extends State<ViewSavedTour> {
     }
 
     return Scaffold(
+      backgroundColor:  Colors.white,
+
       appBar: AppBar(
-        backgroundColor: Constants.lightgreen,
+        backgroundColor:  Colors.white,
         title: Text(
           widget.savedTour.name,
           style: const TextStyle(
@@ -70,18 +72,43 @@ class _ViewSavedTourState extends State<ViewSavedTour> {
                         ),
                       ),
                       const SizedBox(height: 5),
-                      Text(
-                        'Số ngày: ${widget.savedTour.addedPlaces.length}',
-                        style: GoogleFonts.roboto(
-                          fontSize: 14,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0x80FFD166),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Số ngày: ${widget.savedTour.addedPlaces.length}',
+                              style: GoogleFonts.roboto(
+                                fontSize: 14,
+                                color: const Color(0xFF3B6332),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0x80FFD166),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Số tiền ước tính: ${totalMoney.toStringAsFixed(0)}₫',
+                              style: GoogleFonts.roboto(
+                                fontSize: 14,
+                                color: const Color(0xFF3B6332),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Số tiền ước tính: ${totalMoney.toStringAsFixed(0)}₫',
-                        style: GoogleFonts.roboto(
-                          fontSize: 14,
-                        ),
-                      )
+
                     ],
                   ),
                 ),

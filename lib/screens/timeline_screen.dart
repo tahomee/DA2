@@ -42,78 +42,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return 2;
   }
 
-  // List<List<Place>> getData() {
-  //   List<List<Place>> locations = [];
-  //   for (int i = 0; i < places.length; i++) {
-  //     if (places[i].closeTime <
-  //             (widget.startTime.hour + widget.startTime.minute / 60) ||
-  //         places[i].openTime >
-  //             (widget.endTime.hour + widget.endTime.minute / 60) ||
-  //         places[i].city != currentLocationDetail[1]) {
-  //       continue;
-  //     }
-  //     Place tmpFood = food[i % food.length];
-  //     tmpFood.id = const Uuid().v4();
-  //
-  //     locations.add([places[i], tmpFood]);
-  //   }
-  //   return locations;
-  // }
-
-  // List<List<Place>> executeAlgo() {
-  //   double budget = widget.maxBudget;
-  //   int interval =
-  //       widget.returnDate.difference(widget.departureDate).inDays + 1;
-  //   double tMinus = (widget.endTime.hour + widget.endTime.minute / 60) -
-  //       (widget.startTime.hour + widget.startTime.minute / 60);
-  //   List<List<Place>> placesList = getData();
-  //   List<List<Place>> res = [];
-  //   double tmpTime = tMinus;
-  //   while (interval-- > 0 && placesList.isNotEmpty) {
-  //     List<Place> tmpList = [];
-  //     placesList = placesList.where((placePair) {
-  //       int firstRes = _isValid(budget, tmpTime, placePair[0]);
-  //       if (firstRes == 0) {
-  //         return false;
-  //       } else if (firstRes == 1) {
-  //         return true;
-  //       } else {
-  //         tmpList.add(placePair[0]);
-  //         budget -= placePair[0].price;
-  //         tmpTime -= placePair[0].duration;
-  //         if (_isValid(budget, tmpTime, placePair[1]) == 2) {
-  //           tmpList.add(placePair[1]);
-  //           budget -= placePair[1].price;
-  //           tmpTime -= placePair[1].duration;
-  //         }
-  //         return false;
-  //       }
-  //     }).toList();
-  //     tmpTime = tMinus;
-  //     res.add(tmpList);
-  //   }
-  //   return res;
-  // }
   List<List<Place>> getData() {
     List<List<Place>> locations = [];
     for (int i = 0; i < places.length; i++) {
-      print("Check place: ${places[i].name} ở ${places[i].city} - mở từ ${places[i].openTime} đến ${places[i].closeTime}");
-
       if (places[i].closeTime <
-          (widget.startTime.hour + widget.startTime.minute / 60) ||
+              (widget.startTime.hour + widget.startTime.minute / 60) ||
           places[i].openTime >
               (widget.endTime.hour + widget.endTime.minute / 60) ||
           places[i].city != currentLocationDetail[1]) {
-        print(" -> Bị loại");
         continue;
       }
-
       Place tmpFood = food[i % food.length];
       tmpFood.id = const Uuid().v4();
 
       locations.add([places[i], tmpFood]);
     }
-    print(">> Số cặp địa điểm còn lại: ${locations.length}");
     return locations;
   }
 
@@ -125,15 +68,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         (widget.startTime.hour + widget.startTime.minute / 60);
     List<List<Place>> placesList = getData();
     List<List<Place>> res = [];
-
-    print(">> Số ngày: $interval");
-    print(">> Budget: $budget");
-    print(">> Time mỗi ngày: $tMinus");
-    print(">> Danh sách địa điểm lọc được từ getData(): ${placesList.length}");
-    for (var pair in placesList) {
-      print("- ${pair[0].name} (${pair[0].price}đ / ${pair[0].duration}h), ${pair[1].name} (${pair[1].price}đ / ${pair[1].duration}h)");
-    }
-
     double tmpTime = tMinus;
     while (interval-- > 0 && placesList.isNotEmpty) {
       List<Place> tmpList = [];
@@ -156,12 +90,122 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         }
       }).toList();
       tmpTime = tMinus;
-      print("Ngày ${res.length + 1}: ${tmpList.length} địa điểm");
       res.add(tmpList);
     }
-    print(">> Tổng số ngày có lịch trình: ${res.length}");
     return res;
   }
+//   List<List<Place>> getData() {
+//     List<List<Place>> locations = [];
+//
+//     // Hàm chuẩn hóa tên thành phố
+//     String normalizeCityName(String city) {
+//       final cleaned = city.trim().toLowerCase();
+//
+//       if (cleaned.contains("hồ chí minh") || cleaned.contains("tp. hồ chí minh") || cleaned.contains("ho chi minh")) {
+//         return "ho chi minh";
+//       }
+//       if (cleaned.contains("hà nội") || cleaned.contains("tp. hà nội") || cleaned.contains("ha noi")) {
+//         return "ha noi";
+//       }
+//
+//       return cleaned;
+//     }
+//
+//     final currentCity = normalizeCityName(currentLocationDetail[1]);
+//     final startTime = widget.startTime.hour + widget.startTime.minute / 60;
+//     final endTime = widget.endTime.hour + widget.endTime.minute / 60;
+//
+//     print("➡️ Kiểm tra với currentCity: $currentCity, startTime: $startTime, endTime: $endTime");
+// print("places $places");
+//     for (int i = 0; i < places.length; i++) {
+//       final place = places[i];
+//       final placeOpen = place.openTime;
+//       final placeClose = place.closeTime;
+//       final placeCity = normalizeCityName(place.city);
+//
+//       print("➡️ Kiểm tra: ${place.name} ở ${place.city} (Mở: $placeOpen, Đóng: $placeClose)");
+//
+//       bool biLoai = false;
+//
+//       // In giá trị thời gian để kiểm tra
+//       print("placeClose: $placeClose, startTime: $startTime, placeOpen: $placeOpen, endTime: $endTime");
+//
+//       if (placeClose < startTime) {
+//         print("❌ Bị loại vì đóng lúc $placeClose < thời gian bắt đầu $startTime");
+//         biLoai = true;
+//       }
+//
+//       if (placeOpen > endTime) {
+//         print("❌ Bị loại vì mở lúc $placeOpen > thời gian kết thúc $endTime");
+//         biLoai = true;
+//       }
+//
+//       if (placeCity != currentCity) {
+//         print("❌ Bị loại vì khác thành phố: '$placeCity' != '$currentCity'");
+//         biLoai = true;
+//       }
+//
+//       if (biLoai) continue;
+//
+//       // Nếu không bị loại:
+//       Place tmpFood = food[i % food.length];
+//       tmpFood.id = const Uuid().v4();
+//
+//       locations.add([place, tmpFood]);
+//       print("✅ Được chọn: ${place.name}");
+//     }
+//
+//     print("🎯 Tổng số cặp địa điểm hợp lệ: ${locations.length}");
+//     return locations;
+//   }
+//
+//
+//
+//   List<List<Place>> executeAlgo() {
+//     double budget = widget.maxBudget;
+//     int interval =
+//         widget.returnDate.difference(widget.departureDate).inDays + 1;
+//     double tMinus = (widget.endTime.hour + widget.endTime.minute / 60) -
+//         (widget.startTime.hour + widget.startTime.minute / 60);
+//     List<List<Place>> placesList = getData();
+//     List<List<Place>> res = [];
+//
+//     print(">> Số ngày: $interval");
+//     print(">> Budget: $budget");
+//     print(">> Time mỗi ngày: $tMinus");
+//     print(">> Danh sách địa điểm lọc được từ getData(): ${placesList.length}");
+//     for (var pair in placesList) {
+//       print("- ${pair[0].name} (${pair[0].price}đ / ${pair[0].duration}h), ${pair[1].name} (${pair[1].price}đ / ${pair[1].duration}h)");
+//     }
+//
+//     double tmpTime = tMinus;
+//     while (interval-- > 0 && placesList.isNotEmpty) {
+//       List<Place> tmpList = [];
+//       placesList = placesList.where((placePair) {
+//         int firstRes = _isValid(budget, tmpTime, placePair[0]);
+//         if (firstRes == 0) {
+//           return false;
+//         } else if (firstRes == 1) {
+//           return true;
+//         } else {
+//           tmpList.add(placePair[0]);
+//           budget -= placePair[0].price;
+//           tmpTime -= placePair[0].duration;
+//           if (_isValid(budget, tmpTime, placePair[1]) == 2) {
+//             tmpList.add(placePair[1]);
+//             budget -= placePair[1].price;
+//             tmpTime -= placePair[1].duration;
+//           }
+//           return false;
+//         }
+//       }).toList();
+//       tmpTime = tMinus;
+//       print("Ngày ${res.length + 1}: ${tmpList.length} địa điểm");
+//       res.add(tmpList);
+//     }
+//     print(">> Tổng số ngày có lịch trình: ${res.length}");
+//     return res;
+//   }
 
   @override
   Widget build(BuildContext context) {
@@ -177,6 +221,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
     if (res.isEmpty) {
       return Scaffold(
+        backgroundColor:  Colors.white,
         appBar: AppBar(
           title: const Text(
             'Lịch Trình Dành Cho Bạn',
@@ -184,7 +229,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               color: Color(0xFF3B6332),
             ),
           ),
-          backgroundColor: Constants.lightgreen,
+          backgroundColor: Colors.white,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back,
                 color:
@@ -207,6 +252,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       color: const Color.fromARGB(255, 35, 52, 10),
                       fontSize: 30,
                       fontWeight: FontWeight.w700),
+
                 ),
                 const SizedBox(height: 30),
                 Text(

@@ -50,17 +50,20 @@ class _TimelineState extends State<Timeline> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor:  Colors.white,
+
       appBar: AppBar(
-        backgroundColor: Constants.lightgreen,
+        backgroundColor: Colors.white,
         title: const Text(
           'THIẾT KẾ LỊCH TRÌNH',
           style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 35, 52, 10)),
+              color:   Color(0xFF3B6332)),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
+
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +78,7 @@ class _TimelineState extends State<Timeline> {
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 35, 52, 10)),
+                            color:   Color(0xFF3B6332)),
                       ),
                       const SizedBox(height: 8.0),
                       ElevatedButton.icon(
@@ -93,14 +96,14 @@ class _TimelineState extends State<Timeline> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Constants.darkgreen,
+                          backgroundColor:         Color(0x90fFD166),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                         icon: const Icon(
                           CupertinoIcons.calendar,
-                          color: Color(0xFFfff000),
+                          color:      Color(0xFF3B6332),
                         ),
                         label: Text(
                           DateFormat('dd/MM/yyyy').format(_departureDate),
@@ -116,7 +119,7 @@ class _TimelineState extends State<Timeline> {
                           style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(255, 35, 52, 10))),
+                              color: Color(0xFF3B6332))),
                       const SizedBox(height: 8.0),
                       ElevatedButton.icon(
                         onPressed: () async {
@@ -133,14 +136,14 @@ class _TimelineState extends State<Timeline> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Constants.darkgreen,
+                          backgroundColor:  Color(0x90fFD166),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                         icon: const Icon(
                           CupertinoIcons.calendar,
-                          color: Color(0xFFfff000),
+                          color:Color(0xFF3B6332),
                         ),
                         label: Text(
                           DateFormat('dd/MM/yyyy').format(_returnDate),
@@ -156,7 +159,7 @@ class _TimelineState extends State<Timeline> {
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 35, 52, 10)),
+                    color: Color(0xFF3B6332)),
               ),
               const SizedBox(height: 8.0),
               TextFormField(
@@ -174,7 +177,7 @@ class _TimelineState extends State<Timeline> {
                   hintText: 'Nhập ngân sách tối đa',
                   prefixIcon: Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Color.fromARGB(255, 35, 52, 10),
+                    color: Color(0xFF3B6332),
                   ),
                 ),
               ),
@@ -184,14 +187,15 @@ class _TimelineState extends State<Timeline> {
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 35, 52, 10)),
+                    color: Color(0xFF3B6332)),
               ),
               const SizedBox(height: 8.0),
               Row(
                 children: [
                   Radio(
                     value: true,
-                    activeColor: const Color(0xFFfff000),
+                    activeColor:  Color(0x90fFD166),
+
                     groupValue: _isTravelingAlone,
                     onChanged: (value) {
                       setState(() {
@@ -201,12 +205,13 @@ class _TimelineState extends State<Timeline> {
                   ),
                   const Text('Có',
                       style: TextStyle(
-                          color: Color.fromARGB(255, 35, 52, 10),
+                          color: Color(0xFF3B6332),
                           fontWeight: FontWeight.w800)),
                   const SizedBox(width: 16.0),
                   Radio(
                     value: false,
-                    activeColor: const Color(0xFFfff000),
+                    activeColor:  Color(0x90fFD166),
+
                     groupValue: _isTravelingAlone,
                     onChanged: (value) {
                       setState(() {
@@ -216,7 +221,8 @@ class _TimelineState extends State<Timeline> {
                   ),
                   const Text('Không',
                       style: TextStyle(
-                        color: Color.fromARGB(255, 35, 52, 10),
+                        color: Color(0xFF3B6332)
+,
                         fontWeight: FontWeight.w800,
                       )),
                 ],
@@ -230,7 +236,8 @@ class _TimelineState extends State<Timeline> {
                           style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(255, 35, 52, 10))),
+                              color: Color(0xFF3B6332)
+)),
                       const SizedBox(height: 8.0),
                       ElevatedButton.icon(
                         onPressed: () async {
@@ -245,14 +252,14 @@ class _TimelineState extends State<Timeline> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Constants.darkgreen,
+                          backgroundColor: Color(0x90FFD166),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                         icon: const Icon(
                           CupertinoIcons.clock,
-                          color: Color(0xFFfff000),
+                          color: Color(0xFF3B6332),
                         ),
                         label: Text(
                           _startTime.format(context),
@@ -268,7 +275,8 @@ class _TimelineState extends State<Timeline> {
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 35, 52, 10)),
+                            color: Color(0xFF3B6332)
+),
                       ),
                       const SizedBox(height: 8.0),
                       ElevatedButton.icon(
@@ -284,14 +292,14 @@ class _TimelineState extends State<Timeline> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Constants.darkgreen,
+                          backgroundColor: Color(0x90FFD166),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                         icon: const Icon(
                           CupertinoIcons.clock,
-                          color: Color(0xFFfff000),
+                          color: Color(0xFF3B6332),
                         ),
                         label: Text(
                           _endTime.format(context),
@@ -306,17 +314,20 @@ class _TimelineState extends State<Timeline> {
                 child: ElevatedButton(
                   onPressed: _generateSchedule,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 183, 189, 240),
+                    backgroundColor:  Color(0x90fFD166),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
-                    ),
+    side: const BorderSide(color: Color(0xFF3B6332)),
+
+    ),
                     minimumSize: const Size(150, 50),
                   ),
                   child: const Text(
                     'Xây dựng Lịch Trình',
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 35, 52, 10)),
+                        color: Color(0xFF3B6332)
+),
                   ),
                 ),
               ),
