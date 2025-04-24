@@ -45,47 +45,7 @@ Future<List<Place>> getAllPlaceFood(String collection) async {
   return results;
 }
 
-// void getAllPlaceFood(String collection) {
-//   CollectionReference place = FirebaseFirestore.instance.collection(collection);
-//   place.get().then((QuerySnapshot snapshot) {
-//
-//     snapshot.docs.forEach((DocumentSnapshot documentSnapshot) {
-//       if (documentSnapshot.exists) {
-//         Map<String, dynamic> data =
-//             documentSnapshot.data() as Map<String, dynamic>;
-//         print("⏰ openTime kiểu: ${data['opentime']} (${data['opentime'].runtimeType})");
-//         print(" dữ liệu: ${data} ");
-//
-//         Place tmpPlace = Place(
-//           id: data['id'],
-//           name: data['name'],
-//           address: data['address'],
-//           rating: data['rating'],
-//           img: data['image'],
-//           price: data['price'],
-//           history: data['history'],
-//           duration: data['duration'],
-//           city: data['city'],
-//           closeTime: data['closetime'],
-//           district: data['district'],
-//           openTime: data['opentime'],
-//         );
-//         if (collection == 'stourplace1') {
-//           if (places.firstWhereOrNull((element) => element.id == tmpPlace.id) ==
-//               null) {
-//             places.add(tmpPlace);
-//           }
-//         } else {
-//           if (food.firstWhereOrNull((element) => element.id == tmpPlace.id) ==
-//               null) {
-//             food.add(tmpPlace);
-//           }
-//         }
-//       }
-//     });
-//   });
-//
-//  }
+
 
 class SearchByNameWidget extends StatelessWidget {
   final String searchQuery;

@@ -7,6 +7,7 @@ import 'package:stour/model/place.dart';
 import 'package:stour/screens/home.dart';
 import 'firebase_options.dart';
 import 'package:stour/screens/createMiniGame_screen.dart';
+import 'package:stour/screens/addPlace_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +40,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         '/home': (context) => const MainScreen(),
         // '/home': (context) => CreateMinigameScreen(),
-
+        // '/home': (context) => AddPlaceScreen(),
       },
     );
   }
