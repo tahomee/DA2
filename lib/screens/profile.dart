@@ -1,163 +1,193 @@
-import 'package:stour/util/const.dart';
-import 'package:stour/widgets/profile_img.dart';
-import 'package:stour/widgets/profile_option.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:stour/screens/profile_post.dart';
 import 'package:stour/screens/saved_tour.dart';
+import 'package:stour/assets/icons/bio_svg.dart' as BioIcon;
+import 'package:stour/assets/icons/locate_svg.dart' as LocateIcon;
+import 'package:stour/widgets/profile_img.dart';
+import 'package:stour/screens/addPost_screen.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ProfileState createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
   final int _selectedEvent = 0;
+  int _currentIndex = 2;
 
-  final List<Widget> _pages = [const PostScreen()]; //GalleryScreen()
+  final List<IconData> icons = [
+    Icons.timeline_outlined,
+    Icons.home_outlined,
+    Icons.person_outline,
+  ];
+
+  final List<Widget> _pages = [const PostScreen()];
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 9.0),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                profileImage(size),
-                profileInfo(),
-                profileActivity(),
-                profileEvents(size),
-                _pages[_selectedEvent],
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    profileImage(size),
+                    profileInfo(),
+                    profileActivity(),
+                    profileEvents(size),
+                  ],
+                ),
+              ),
             ),
-          ),
+            SizedBox(
+              height: 300, // hoặc dùng Expanded nếu PostScreen cần full height
+              child: _pages[_selectedEvent],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Container profileEvents(Size size) {
+  Widget profileEvents(Size size) {
+    return Column(
+      children: [
+        const Divider(height: 1, thickness: 1),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildEventButton("Bài viết", 0, "2"),
+            _buildEventButton("Đánh giá", 1, "2"),
+            _buildEventButton("Lịch trình", 2, "2"),
+          ],
+        ),
+        const SizedBox(height: 16),
+        const Divider(height: 1, thickness: 1),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildActionButton("Thêm bài viết", onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddPostScreen(),
+                ),
+              );
+            }),
+            _buildActionButton("Lịch trình đã lưu", onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SavedTour(),
+                ),
+              );
+            }),
+          ],
+        ),
+        const SizedBox(height: 16),
+        const Divider(height: 1, thickness: 1),
+      ],
+    );
+  }
+
+  Widget _buildEventButton(String title, int index, String count) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 35, 52, 10),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color.fromARGB(255, 35, 52, 10),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String text, {VoidCallback? onPressed}) {
     return Container(
-      margin: EdgeInsets.zero,
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              width: size.width / 3.6,
-              padding: const EdgeInsets.all(8),
-              child: MaterialButton(
-                elevation: 0.5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
-                    side: BorderSide(color: Constants.darkPrimary)),
-                color:
-                    _selectedEvent == 1 ? Constants.lightPrimary : Colors.white,
-                onPressed: () {},
-                child: Text("THÊM BÀI VIẾT",
-                    style: TextStyle(
-                      color: _selectedEvent == 1
-                          ? Constants.lightPrimary
-                          : const Color.fromARGB(255, 0, 0, 0),
-                    )),
-              ),
-            ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFECB3),
+        border: Border.all(color: const Color(0xFF2D4D0A)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextButton(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          foregroundColor: const Color(0xFF2D4D0A),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
           ),
-          Expanded(
-            child: Container(
-              width: size.width / 3.6,
-              padding: const EdgeInsets.all(8),
-              child: MaterialButton(
-                elevation: 0.5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
-                    side: BorderSide(color: Constants.darkPrimary)),
-                color:
-                    _selectedEvent == 1 ? Constants.lightPrimary : Colors.white,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return const SavedTour();
-                      },
-                    ),
-                  );
-                },
-                child: Text("LỊCH TRÌNH ĐÃ LƯU",
-                    style: TextStyle(
-                      color: _selectedEvent == 1
-                          ? Constants.lightPrimary
-                          : const Color.fromARGB(255, 0, 0, 0),
-                    )),
-              ),
-            ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
+        ),
+        onPressed: onPressed,
+        child: Text(text),
       ),
     );
   }
-}
 
-Container profileInfo() {
-  return Container(
-    padding: EdgeInsets.zero,
-    child: ListTile(
-      title: const Row(
-        children: [
-          Text(
-            "Hato",
-            style: TextStyle(
+  Widget profileInfo() {
+    return Column(
+      children: [
+        const Text(
+          "HBT",
+          style: TextStyle(
+            color: Color.fromARGB(255, 35, 52, 10),
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.string(BioIcon.bioSVG, height: 16, width: 16),
+            const SizedBox(width: 4),
+            const Text(
+              "Cần Thơ",
+              style: TextStyle(
                 color: Color.fromARGB(255, 35, 52, 10),
-                fontWeight: FontWeight.bold,
-                fontSize: 22),
-          ),
-          SizedBox(
-            width: 8,
-          ),
-        ],
-      ),
-      subtitle: Column(
-        children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.home,
-                  color: Color.fromARGB(255, 35, 52, 10),
-                ),
-                Text(
-                  "Can Tho",
-                  style: TextStyle(
-                      color: Color.fromARGB(255, 35, 52, 10), fontSize: 12),
-                ),
-              ],
+                fontSize: 14,
+              ),
             ),
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.person,
-                  color: Color.fromARGB(255, 35, 52, 10),
-                ),
-                Text(
-                  "Bio",
-                  style: TextStyle(
-                      color: Color.fromARGB(255, 35, 52, 10), fontSize: 12),
-                ),
-              ],
+            const SizedBox(width: 16),
+            SvgPicture.string(LocateIcon.locateSVG, height: 16, width: 16),
+            const SizedBox(width: 4),
+            const Text(
+              "Thích đi loanh quanh",
+              style: TextStyle(
+                color: Color.fromARGB(255, 35, 52, 10),
+                fontSize: 14,
+              ),
             ),
-          ),
-        ],
-      ),
-    ),
-  );
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget profileActivity() {
+    return const SizedBox(height: 16); // Placeholder or custom widget
+  }
 }

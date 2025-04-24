@@ -38,7 +38,7 @@ List<Reviews> user = [
       id: "review2",
       user: "vtk",
       userImg: "unknown",
-      name: "Văn Tuấn Kiệt",
+      name: "Nguyễn Văn A",
       idLocation: "place8",
       content:
           "Kiến trúc nơi đây thật sự rất đẹp. Nó giữ được những nét cổ kính của riêng mình. Tôi thật sự rất thích nơi đây",
@@ -49,7 +49,7 @@ List<Reviews> user = [
       id: "review3",
       user: "vmk",
       userImg: "unknown",
-      name: "Võ Minh Khôi",
+      name: "Nguyễn Văn A",
       idLocation: "place14",
       content:
           "Kiến trúc ở đây quả thật rất đẹp và cổ kính. Không gian bên trong cũng rất trang nghiêm",

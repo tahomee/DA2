@@ -9,6 +9,7 @@ import 'package:stour/screens/home.dart';
 import 'firebase_options.dart';
 import 'package:stour/screens/sign_in.dart';
 import 'package:stour/screens/sign_up.dart';
+import 'package:stour/screens/createMiniGame_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,8 +41,6 @@ class _MyAppState extends State<MyApp> {
       ),
       routes: {
         '/home': (context) => const MainScreen(),
-        '/signin': (context) => const SignInScreen(),
-        '/signup': (context) => const SignUpScreen(),
       },
     );
   }

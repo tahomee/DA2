@@ -45,7 +45,7 @@ class _CouponCardState extends State<CouponCard> {
                   height: MediaQuery.of(context).size.height / 9,
                   child: Center(
                     child: Text(
-                      widget.coupon.name,
+                      widget.coupon.title,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           fontSize: 24,
