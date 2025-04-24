@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:stour/util/const.dart';
@@ -29,8 +30,31 @@ class _SignInScreenState extends State<SignInScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // Nếu đăng nhập thành công, điều hướng về màn hình chính (ví dụ: '/home')
-      Navigator.pushReplacementNamed(context, '/home');
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user?.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final role = userDoc.data()?['role'];
+
+        // Navigate based on the role
+        if (role == 'business') {
+          Navigator.pushReplacementNamed(context, '/coupon');
+        } else if (role == 'traveler') {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else if (role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/profile');
+        } else {
+          setState(() {
+            _errorMessage = 'Vai trò không hợp lệ.';
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Không tìm thấy thông tin người dùng.';
+        });
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         if (e.code == 'user-not-found') {
@@ -68,7 +92,7 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset('assets/splash_screen.png', height: 100),
+                Image.asset('assets/logo.png', height: 100),
                 const SizedBox(height: 16),
                 const Text(
                   "ĐĂNG NHẬP",
@@ -122,7 +146,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, '/signup');
+                        Navigator.pushNamed(context, '/role');
                       },
                       child: const Text(
                         "Đăng ký",

@@ -9,8 +9,10 @@ import 'package:stour/screens/home.dart';
 import 'firebase_options.dart';
 import 'package:stour/screens/sign_in.dart';
 import 'package:stour/screens/sign_up.dart';
+import 'package:stour/screens/role_selection.dart';
+import 'package:stour/screens/profile.dart';
 import 'package:stour/screens/createMiniGame_screen.dart';
-
+import 'package:stour/screens/coupon_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -43,6 +45,9 @@ class _MyAppState extends State<MyApp> {
         '/home': (context) => const MainScreen(),
         '/signin': (context) => const SignInScreen(),
         '/signup': (context) => const SignUpScreen(),
+        '/role': (context) => const RoleSelectionScreen(),
+        '/profile': (context) => const Profile(),
+        '/coupon': (context) => const CouponScreen(),
       },
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -15,6 +16,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _confirmPasswordController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -23,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
+    final role = (ModalRoute.of(context)?.settings.arguments as Map?)?['role'];
 
     setState(() {
       _errorMessage = null;
@@ -40,15 +43,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isLoading = true;
       });
 
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      // (Tuỳ chọn) cập nhật tên hiển thị
+      await _firestore.collection('users').doc(userCredential.user?.uid).set({
+        'email': email,
+        'username': _userNameController.text.trim(),
+        'role': role,
+        'password': password,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
       await _auth.currentUser?.updateDisplayName(_userNameController.text.trim());
       await _auth.currentUser?.sendEmailVerification();
-      // Sau khi đăng ký thành công, quay lại màn hình login
       if (mounted) {
-        Navigator.pop(context);
-      }
+        Navigator.pushNamed(context, '/signin');      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message;
@@ -75,7 +85,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Image.asset('assets/splash_screen.png', height: 100),
+                Image.asset('assets/logo.png', height: 100),
                 const SizedBox(height: 20),
                 const Text(
                   'ĐĂNG KÝ',
