@@ -13,6 +13,8 @@ import 'package:stour/screens/role_selection.dart';
 import 'package:stour/screens/profile.dart';
 import 'package:stour/screens/createMiniGame_screen.dart';
 import 'package:stour/screens/coupon_screen.dart';
+import 'package:stour/screens/dashboardBusiness_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -21,7 +23,7 @@ void main() async {
 
   getAllPlaceFood('stourplace1');
   getAllPlaceFood('food');
-  const GoogleMapsController();
+  // const GoogleMapsController();
   runApp(const MyApp());
 }
 
@@ -48,6 +50,7 @@ class _MyAppState extends State<MyApp> {
         '/role': (context) => const RoleSelectionScreen(),
         '/profile': (context) => const Profile(),
         '/coupon': (context) => const CouponScreen(),
+          '/menuBusiness': (context) => const MenuBusiness(),
       },
     );
   }

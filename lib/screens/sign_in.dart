@@ -40,7 +40,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
         // Navigate based on the role
         if (role == 'business') {
-          Navigator.pushReplacementNamed(context, '/coupon');
+          Navigator.pushReplacementNamed(context, '/menuBusiness');
         } else if (role == 'traveler') {
           Navigator.pushReplacementNamed(context, '/home');
         } else if (role == 'admin') {

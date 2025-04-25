@@ -143,18 +143,19 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
         'address': _addressController.text,
         'city': _cityController.text,
         'district': _districtController.text,
-        'openTime': _openTimeController.text,
-        'closeTime': _closeTimeController.text,
+        'openTime': double.tryParse(_openTimeController.text) ?? 0.0,
+        'closeTime': double.tryParse(_closeTimeController.text) ?? 0.0,
         'rating': _rating ?? 3.0,
         'minPrice': int.tryParse(_minPriceController.text) ?? 0,
         'maxPrice': int.tryParse(_maxPriceController.text) ?? 0,
         'description': _descriptionController.text,
         'imageUrls': imageUrls,
-        'mainImage': imageUrls.first,
+        'image': imageUrls.first,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'status': 'active',
       };
+
 
       await _firestore.collection('stourplace1').add(newPlace);
 
