@@ -54,6 +54,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'role': role,
         'password': password,
         'createdAt': FieldValue.serverTimestamp(),
+        'avatar': 'https://static.vecteezy.com/system/resources/previews/020/194/541/non_2x/avatar-of-a-tourist-character-free-vector.jpg',
+        'posts': [],
+        'reviews': [],
+        'saveTours': [],
       });
       await _auth.currentUser?.updateDisplayName(_userNameController.text.trim());
       await _auth.currentUser?.sendEmailVerification();

@@ -10,25 +10,30 @@ class ReviewsServices {
     return snapshot.docs;
   }
 
-  void createReview(String id, String user, String idLocation, String name,
-      String userImg, String content, String score) {
-    CollectionReference reviewsRef =
-        FirebaseFirestore.instance.collection('reviews');
-    reviewsRef
-        .add({
-          'id': id,
-          'name': name,
-          'user': user,
-          'user_img': userImg,
-          'content': content,
-          'idLocation': idLocation,
-          'score': score,
-          'createdAt': DateTime.now().toUtc().toString(),
-          'updatedAt': DateTime.now().toUtc().toString(),
-        })
-        .then((value) {})
-        .catchError((error) {});
+  Future<String> createReview(
+      String id,
+      String user,
+      String idLocation,
+      String name,
+      String userImg,
+      String content,
+      String score,
+      ) async {
+    CollectionReference reviewsRef = FirebaseFirestore.instance.collection('reviews');
+    DocumentReference docRef = await reviewsRef.add({
+      'id': id,
+      'name': name,
+      'user': user,
+      'user_img': userImg,
+      'content': content,
+      'idLocation': idLocation,
+      'score': score,
+      'createdAt': DateTime.now().toUtc().toString(),
+      'updatedAt': DateTime.now().toUtc().toString(),
+    });
+    return docRef.id;
   }
+}
 
   // void reloadReviews(String locationID) async {
   //   ReviewsServices rs = ReviewsServices();
@@ -37,4 +42,4 @@ class ReviewsServices {
   //       .where('idLocation', isEqualTo: locationID)
   //       .get();
   // }
-}
+

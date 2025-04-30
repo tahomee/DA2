@@ -46,22 +46,23 @@ class HomeAppBar extends StatelessWidget {
           const Spacer(),
           InkWell(
             onTap: () {
-              SearchCard();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Scaffold(
+                    appBar: AppBar(title: const Text("Search")),
+                    body: buildSearchBar(context),
+                  ),
+
+              ),
+              );
             },
             child: Container(
               padding: const EdgeInsets.all(10),
-
-              child: GestureDetector(
-                onTap: () {
-                  buildSearchBar(context);
-                },
-                child:  SvgPicture.string(
-                  searchSVG,
-
-                ),
-              ),
+              child: SvgPicture.string(searchSVG),
             ),
           ),
+
         ],
       ),
     );

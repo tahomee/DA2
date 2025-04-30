@@ -40,6 +40,8 @@ class _TrendingPlaceState extends State<TrendingPlace> {
               borderRadius: BorderRadius.circular(10.0),
             ),
             elevation: 3.0,
+            color: Constants.cardBG,
+
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

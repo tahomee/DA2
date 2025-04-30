@@ -1,5 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,6 +18,38 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _animateLogo();
+    _checkLoginStatus();
+  }
+  void _checkLoginStatus() async {
+    await Future.delayed(const Duration(seconds: 2)); // để logo fade in
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final role = userDoc.data()?['role'];
+
+        if (role == 'business') {
+          Navigator.pushReplacementNamed(context, '/coupon');
+        } else if (role == 'traveler') {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else if (role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/profile');
+        } else {
+          Navigator.pushReplacementNamed(context, '/signin'); // Nếu role lỗi
+        }
+      } else {
+        Navigator.pushReplacementNamed(context, '/signin'); // Không tìm thấy user
+      }
+    } else {
+      // Chưa đăng nhập
+      Navigator.pushReplacementNamed(context, '/signin');
+    }
   }
 
   void _animateLogo() async {

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Place {
   String id;
   final String name;
@@ -26,19 +28,81 @@ class Place {
     required this.openTime,
     required this.closeTime,
   });
+  factory Place.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
 
+    return Place(
+      id: data['id'] ?? '',
+      name: data['name'] ?? '',
+      address: data['address'] ?? '',
+      rating: data['rating']?.toString() ?? '0.0',
+      img: data['image'] ?? '', // Lưu ý: field trong Firestore là 'image' nha
+      price: data['price'] ?? 0,
+      history: data['history'] ?? '',
+      duration: data['duration'] ?? 0,
+      district: data['district'] ?? '',
+      city: data['city'] ?? '',
+      openTime: data['opentime'] ?? 0,
+      closeTime: data['closetime'] ?? 0,
+    );
+  }
 }
 
 class SavedTourClass {
   final List<List<Place>> addedPlaces;
   String name;
   final DateTime timeSaved;
+
   SavedTourClass({
     required this.addedPlaces,
     required this.name,
     required this.timeSaved,
   });
+
+  factory SavedTourClass.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    List<dynamic> flatPlaces = data['addedPlaces'] ?? [];
+
+    // Nhóm lại theo dayIndex
+    Map<int, List<Place>> groupedByDay = {};
+
+    for (var placeData in flatPlaces) {
+      int dayIndex = placeData['dayIndex'] ?? 1;
+      Place place = Place(
+        id: placeData['id'] ?? '',
+        name: placeData['name'] ?? '',
+        address: placeData['address'] ?? '',
+        rating: placeData['rating']?.toString() ?? '0.0',
+        img: placeData['img'] ?? '',
+        price: placeData['price'] ?? 0,
+        history: placeData['history'] ?? '',
+        duration: placeData['duration'] ?? 0,
+        openTime: placeData['openTime'] ?? 0,
+        closeTime: placeData['closeTime'] ?? 0,
+        district: placeData['district'] ?? '',
+        city: placeData['city'] ?? '',
+      );
+
+      groupedByDay.putIfAbsent(dayIndex, () => []);
+      groupedByDay[dayIndex]!.add(place);
+    }
+
+    // Sort theo dayIndex rồi extract value
+    List<MapEntry<int, List<Place>>> sortedEntries = groupedByDay.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+    List<List<Place>> addedPlaces = sortedEntries.map((e) => e.value).toList();
+
+    return SavedTourClass(
+      name: data['name'] ?? '',
+      timeSaved: DateTime.tryParse(data['timeSaved'] ?? '') ?? DateTime.now(),
+      addedPlaces: addedPlaces,
+    );
+  }
+
 }
+
 
 List<String> currentLocationDetail = [];
 

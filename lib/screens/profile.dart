@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,6 +11,8 @@ import 'package:stour/assets/icons/locate_svg.dart' as LocateIcon;
 import 'package:stour/widgets/profile_img.dart';
 import 'package:stour/screens/addPost_screen.dart';
 
+import '../util/places.dart';
+
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
@@ -19,6 +23,8 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   final int _selectedEvent = 0;
   int _currentIndex = 2;
+  Map<String, dynamic>? _profileData;
+  bool _isLoading = true;
 
   final List<IconData> icons = [
     Icons.timeline_outlined,
@@ -27,31 +33,74 @@ class _ProfileState extends State<Profile> {
   ];
 
   final List<Widget> _pages = [const PostScreen()];
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacementNamed(context, '/signin');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout failed: $e')),
+      );
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final data = await getProfileData(user.uid);
+        setState(() {
+          _profileData = data;
+          _isLoading = false;
+
+
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load profile: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color.fromARGB(255, 35, 52, 10)),
+            onPressed: () {
+              _logout(context);
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    profileImage(size),
-                    profileInfo(),
-                    profileActivity(),
-                    profileEvents(size),
-                  ],
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ProfileImage(size: size, docId: FirebaseAuth.instance.currentUser?.uid ?? ""),
+              profileInfo(),
+              profileActivity(),
+              profileEvents(size),
+              SizedBox(
+                height: 550, // Constrain the height of the PostScreen
+                child: _pages[_selectedEvent],
               ),
-            ),
-            SizedBox(
-              height: 300, // hoặc dùng Expanded nếu PostScreen cần full height
-              child: _pages[_selectedEvent],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -65,9 +114,10 @@ class _ProfileState extends State<Profile> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildEventButton("Bài viết", 0, "2"),
-            _buildEventButton("Đánh giá", 1, "2"),
-            _buildEventButton("Lịch trình", 2, "2"),
+            _buildEventButton("Bài viết", 0,(_profileData!['posts'] as List?)?.length.toString() ?? "0"),
+            _buildEventButton("Đánh giá", 1, (_profileData!['reviews'] as List?)?.length.toString() ?? "0"),
+            _buildEventButton("Lịch trình", 2, (_profileData!['saveTours'] as List?)?.length.toString() ?? "0"),
+
           ],
         ),
         const SizedBox(height: 16),
@@ -76,13 +126,16 @@ class _ProfileState extends State<Profile> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildActionButton("Thêm bài viết", onPressed: () {
-              Navigator.push(
-                context,
+            _buildActionButton("Thêm bài viết", onPressed: () async {
+              final result = await Navigator.push(
+              context,
                 MaterialPageRoute(
                   builder: (context) => const AddPostScreen(),
                 ),
               );
+              if (result == true) {
+                _fetchProfile(); // Reload lại dữ liệu
+              }
             }),
             _buildActionButton("Lịch trình đã lưu", onPressed: () {
               Navigator.push(
@@ -148,10 +201,17 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget profileInfo() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_profileData == null) {
+      return const Center(child: Text("Failed to load profile"));
+    }
     return Column(
       children: [
-        const Text(
-          "HBT",
+         Text(
+          _profileData!['username'] ?? "Unknown",
           style: TextStyle(
             color: Color.fromARGB(255, 35, 52, 10),
             fontWeight: FontWeight.bold,
@@ -165,7 +225,7 @@ class _ProfileState extends State<Profile> {
             SvgPicture.string(BioIcon.bioSVG, height: 16, width: 16),
             const SizedBox(width: 4),
             const Text(
-              "Cần Thơ",
+              "Ăn ngủ đi",
               style: TextStyle(
                 color: Color.fromARGB(255, 35, 52, 10),
                 fontSize: 14,
@@ -174,8 +234,8 @@ class _ProfileState extends State<Profile> {
             const SizedBox(width: 16),
             SvgPicture.string(LocateIcon.locateSVG, height: 16, width: 16),
             const SizedBox(width: 4),
-            const Text(
-              "Thích đi loanh quanh",
+             Text(
+              _profileData!['location'] ?? "Unknown",
               style: TextStyle(
                 color: Color.fromARGB(255, 35, 52, 10),
                 fontSize: 14,
@@ -189,5 +249,32 @@ class _ProfileState extends State<Profile> {
 
   Widget profileActivity() {
     return const SizedBox(height: 16); // Placeholder or custom widget
+  }
+}
+Future<Map<String, dynamic>> getProfileData(String docId) async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  try {
+    // Fetch user data from Firestore
+    final userDoc = await firestore.collection('users').doc(docId).get();
+    if (!userDoc.exists) {
+      throw Exception('User not found');
+    }
+
+    final username = userDoc.data()?['username'] ?? 'Unknown';
+
+
+
+    // Combine Firestore data with location data
+    return {
+      'avatar': userDoc.data()?['avatar'] ?? 'default_avatar.png',
+      'posts': userDoc.data()?['posts'] ?? [],
+      'reviews': userDoc.data()?['reviews'] ?? [],
+      'saveTours': userDoc.data()?['saveTours'] ?? [],
+      'username': username,
+      'location': currentLocationDetail[1],
+    };
+  } catch (e) {
+    throw Exception('Error fetching profile data: $e');
   }
 }

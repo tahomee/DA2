@@ -4,67 +4,39 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stour/util/const.dart';
 
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _isLoading = false;
   String? _errorMessage;
 
-  void _signIn() async {
+  void _forgotPassword() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
 
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user?.uid)
-          .get();
-
-      if (userDoc.exists) {
-        final role = userDoc.data()?['role'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('uid', userCredential.user!.uid);
-        await prefs.setString('role', role ?? '');
-        // Navigate based on the role
-        if (role == 'business') {
-          Navigator.pushReplacementNamed(context, '/coupon');
-        } else if (role == 'traveler') {
-          Navigator.pushReplacementNamed(context, '/home');
-        } else if (role == 'admin') {
-          Navigator.pushReplacementNamed(context, '/profile');
-        } else {
-          setState(() {
-            _errorMessage = 'Vai trò không hợp lệ.';
-          });
-        }
-      } else {
-        setState(() {
-          _errorMessage = 'Không tìm thấy thông tin người dùng.';
-        });
-      }
+      // Hiển thị thông báo thành công và hướng dẫn người dùng kiểm tra email
+      setState(() {
+        _errorMessage = 'Đã gửi liên kết khôi phục mật khẩu đến email của bạn.';
+      });
     } on FirebaseAuthException catch (e) {
       setState(() {
         if (e.code == 'user-not-found') {
           _errorMessage = 'Không tìm thấy người dùng với email này.';
-        } else if (e.code == 'wrong-password') {
-          _errorMessage = 'Sai mật khẩu.';
+        } else if (e.code == 'invalid-email') {
+          _errorMessage = 'Email không hợp lệ.';
         } else {
           _errorMessage = e.message;
         }
@@ -100,7 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 Image.asset('assets/logo.png', height: 100),
                 const SizedBox(height: 16),
                 const Text(
-                  "ĐĂNG NHẬP",
+                  "QUÊN MẬT KHẨU",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -109,7 +81,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 const SizedBox(height: 24),
                 _inputField("Email", _emailController),
-                _inputField("Mật khẩu", _passwordController, obscure: true),
                 const SizedBox(height: 8),
                 if (_errorMessage != null)
                   Text(
@@ -130,9 +101,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       vertical: 12,
                     ),
                   ),
-                  onPressed: _signIn,
+                  onPressed: _forgotPassword,
                   child: const Text(
-                    "Đăng nhập",
+                    "Khôi phục",
                     style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.bold,
@@ -141,42 +112,6 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/forgot');
-                  },
-                  child: const Text(
-                    "Quên mật khẩu ?",
-                    style: TextStyle(
-                      color: Color(0xFF3B6332),
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Chưa có tài khoản? ",
-                      style: TextStyle(color: Color(0xFFFFD166)),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/role');
-                      },
-                      child: const Text(
-                        "Đăng ký",
-                        style: TextStyle(
-                          color: Color(0xFF60B0D1),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                  ],
-                )
               ],
             ),
           ),

@@ -1,6 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:stour/util/const.dart';
+
+import 'comment_screen.dart';
 
 class PostScreen extends StatefulWidget {
   const PostScreen({super.key});
@@ -11,6 +16,7 @@ class PostScreen extends StatefulWidget {
 
 class _PostScreenState extends State<PostScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
 
   @override
   Widget build(BuildContext context) {
@@ -33,18 +39,48 @@ class _PostScreenState extends State<PostScreen> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
-            final post = snapshot.data!.docs[index];
-            final data = post.data() as Map<String, dynamic>;
+            final postData = snapshot.data!.docs[index];
+            final data = postData.data() as Map<String, dynamic>;
+            final authorId = data['authorId'] ?? '';
+            final postId = postData.id;
+            return FutureBuilder<DocumentSnapshot>(
+              future: _firestore.collection('users').doc(authorId).get(),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const SizedBox();
+                }
+                if (userSnapshot.hasError || !userSnapshot.hasData || !userSnapshot.data!.exists) {
+                  return _buildPostItem(
+                    postId: postId,
+                    content: data['content'] ?? '',
+                    imageUrls: List<String>.from(data['imageUrls'] ?? []),
+                    author: 'Người dùng ẩn danh',
+                    timeAgo: _getTimeAgo(data['createdAt'] as Timestamp),
+                    location: data['location'] ?? '',
+                    avatarUrl: '',
+                    likes: data['likes'] ?? 0,
+                    comments: data['comments'] ?? 0,
+                    shares: data['shares']??0,
+                  );
+                }
+                final userData = userSnapshot.data!.data() as Map<String, dynamic>;
 
-            return _buildPostItem(
-              content: data['content'] ?? '',
-              imageUrls: List<String>.from(data['imageUrls'] ?? []),
-              author: data['authorName'] ?? 'Hato',
-              timeAgo: _getTimeAgo(data['createdAt'] as Timestamp),
-              location: data['location'] ?? '',
-              likes: data['likes'] ?? 0,
-              comments: data['comments'] ?? 0,
+                return _buildPostItem(
+                  postId: postId,
+                  content: data['content'] ?? '',
+                  imageUrls: List<String>.from(data['imageUrls'] ?? []),
+                  author: userData['username'] ?? 'Không tên',
+                  timeAgo: _getTimeAgo(data['createdAt'] as Timestamp),
+                  location: data['location'] ?? '',
+                  avatarUrl: userData['avatar'] ?? '',
+                  likes: data['likes'] ?? 0,
+                  comments: data['comments'] ?? 0,
+                  shares: data['shares']??0,
+
+                );
+              },
             );
+
           },
         );
       },
@@ -68,13 +104,17 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Widget _buildPostItem({
+    required String postId,
     required String content,
+    required String avatarUrl,
     required List<String> imageUrls,
     required String author,
     required String timeAgo,
     required String location,
     required int likes,
     required int comments,
+    required int shares,
+
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -91,10 +131,11 @@ class _PostScreenState extends State<PostScreen> {
                 children: [
                   Row(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         backgroundColor: Colors.transparent,
-                        backgroundImage: NetworkImage(
-                            "https://i.pinimg.com/236x/0a/b5/9e/0ab59e7c8e7a1213ff1ee891e98e06ae.jpg?nii=t"),
+                        backgroundImage: avatarUrl.isNotEmpty
+                            ? NetworkImage(avatarUrl)
+                            : const AssetImage('assets/default_avatar.png') as ImageProvider,
                       ),
                       const SizedBox(width: 10),
                       Column(
@@ -208,18 +249,48 @@ class _PostScreenState extends State<PostScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   InkWell(
-                    onTap: () {},
+                    onTap: () async {
+                      final currentUser = FirebaseAuth.instance.currentUser; // Lấy người dùng hiện tại
+                      if (currentUser == null) {
+                        // Nếu chưa đăng nhập, không cho thả like
+                        return;
+                      }
+
+                      final postRef = _firestore.collection('posts').doc(postId);
+                      final postDoc = await postRef.get();
+
+                      // Kiểm tra xem người dùng đã thả like chưa
+                      List<dynamic> likedBy = postDoc['likedBy'] ?? [];
+                      if (!likedBy.contains(currentUser.uid)) {
+                        // Nếu chưa thả like, cho phép thả like
+                        await postRef.update({
+                          'likes': FieldValue.increment(1), // Tăng số lượt thích
+                          'likedBy': FieldValue.arrayUnion([currentUser.uid]), // Thêm userId vào mảng likedBy
+                        });
+                      } else {
+                        // Nếu đã thả like rồi, thông báo cho người dùng biết
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Bạn đã thả like bài viết này")),
+                        );
+                      }
+                    },
                     child: Row(
                       children: [
-                        const Icon(Icons.favorite_outline,
-                            color: Color.fromARGB(255, 255, 12, 109)),
+                        const Icon(Icons.favorite_outline, color: Color.fromARGB(255, 255, 12, 109)),
                         const SizedBox(width: 5),
-                        Text(likes.toString()),
+                        Text(likes.toString()),  // Hiển thị số lượt thích
                       ],
                     ),
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CommentScreen(postId: postId),
+                        ),
+                      );
+                    },
                     child: Row(
                       children: [
                         Icon(Icons.comment_outlined, color: Constants.darkgreen),
@@ -228,16 +299,35 @@ class _PostScreenState extends State<PostScreen> {
                       ],
                     ),
                   ),
+
                   InkWell(
-                    onTap: () {},
+                    onTap: () async {
+                      try {
+                        final currentUser = FirebaseAuth.instance.currentUser; // Lấy người dùng hiện tại
+                        if (currentUser == null) {
+                          return;
+                        }
+
+                        // Chia sẻ nội dung bài viết
+                        await Share.share('Xem bài viết này: $content');
+                      } catch (e) {
+                        print("Error sharing post: $e");  // In lỗi ra console
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Đã xảy ra lỗi khi chia sẻ bài viết.")),
+                        );
+                      }
+                    },
                     child: Row(
                       children: [
                         Icon(Icons.share_outlined, color: Constants.darkpp),
                         const SizedBox(width: 5),
-                        const Text("1"),
+                        Text(shares.toString()),
                       ],
                     ),
-                  ),
+                  )
+
+
+
                 ],
               ),
             ),

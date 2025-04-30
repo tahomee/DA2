@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,6 +9,8 @@ import 'package:stour/util/places.dart';
 import 'package:flutter/services.dart';
 import 'package:stour/screens/review_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../assets/icons/review_svg.dart';
 class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key, required this.placeToDisplay});
   final Place placeToDisplay;
@@ -80,8 +83,8 @@ class _DetailScreenState extends State<DetailScreen> {
                       () {
                         hasLiked = !hasLiked;
                         buttonColor = (hasLiked)
-                            ? const Color.fromARGB(255, 255, 12, 109)
-                            : Colors.black;
+                            ? const Color(0xFF3B6332)
+                            : Color(0xFF3B6332);
                         initialFavIcon = (hasLiked)
                             ? const Icon(Icons.favorite, size: 30)
                             : const Icon(Icons.favorite_border, size: 30);
@@ -107,9 +110,11 @@ class _DetailScreenState extends State<DetailScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.placeToDisplay.name,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
+                  fontFamily: 'Montserrat', // Sử dụng font Montserrat
                   fontSize: 22,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w700, // Đặt trọng số font
+                  color: Color(0xFF3B6332),
                 ),
               ),
             ),
@@ -121,7 +126,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 children: [
                   const Icon(
                     Icons.location_pin,
-                    color: Color.fromARGB(255, 44, 105, 224),
+                    color: Color(0xFF60B0D1),
                     size: 25,
                   ),
                   const SizedBox(width: 5),
@@ -135,9 +140,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Text(
                       widget.placeToDisplay.address,
                       style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        color: const Color.fromARGB(255, 44, 105, 224),
-                        decoration: TextDecoration.underline,
+                        fontSize: 15,
+                        color: Color(0xFF60B0D1),
                          ),
                         ),
                       ),
@@ -159,12 +163,13 @@ class _DetailScreenState extends State<DetailScreen> {
                         children: [
                           const Icon(
                             Icons.account_balance_wallet_outlined,
-                            size: 18,
+                            size: 20,
+                              color:Color(0xFFFFD166)
                           ),
                           const SizedBox(width: 5),
                           Text(
                               '${widget.placeToDisplay.price.toStringAsFixed(0)}₫',
-                              style: const TextStyle(fontSize: 16))
+                              style: const TextStyle(fontSize: 20, color:Color(0xFFFFD166)))
                         ],
                       ),
                       const SizedBox(height: 5),
@@ -184,6 +189,13 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                   const Spacer(),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:  Color.fromARGB(128, 255, 209, 102),  // Màu nền
+                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -193,7 +205,27 @@ class _DetailScreenState extends State<DetailScreen> {
                         ),
                       );
                     },
-                    child: const Text('Đánh giá và nhận xét'),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.string(
+                          reviewSVG,  // Icon SVG
+                          width: 24,
+                          height: 24,
+                          color: Color(0xFF3B6332),  // Màu icon
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          'Xem đánh giá ',
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',  // Font Montserrat
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,  // Độ đậm của chữ
+                            color: Color(0xFF3B6332),  // Màu chữ
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -206,8 +238,10 @@ class _DetailScreenState extends State<DetailScreen> {
                   scrollDirection: Axis.vertical,
                   child: Text(
                     widget.placeToDisplay.history,
-                    style: GoogleFonts.poppins(fontSize: 18),
-                  ),
+                    style: TextStyle(
+                      fontFamily: 'Montserrat', // Sử dụng font Montserrat
+                      fontSize: 18,
+                    ),                  ),
                 ),
               ),
             ),

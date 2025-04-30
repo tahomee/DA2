@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // import 'package:stour/util/reviews.dart';
 // import 'package:flutter/material.dart';
 // import 'package:stour/util/reviews.dart';
 import 'package:stour/model/review.dart';
+import 'package:stour/screens/profile.dart';
 import 'package:stour/util/const.dart';
 
 class CreateReviewScreen extends StatefulWidget {
@@ -16,6 +19,28 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
   int selectedStars = 5;
   TextEditingController commentController = TextEditingController();
   ReviewsServices rs = ReviewsServices();
+  final user = FirebaseAuth.instance.currentUser;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  Map<String, dynamic>? userData;
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final doc = await _firestore.collection('users').doc(user!.uid).get();
+      if (doc.exists) {
+        userData = doc.data();
+        setState(() {});
+      }
+    } catch (e) {
+      print('Error fetching profile data: $e');
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,15 +120,20 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    rs.createReview(
-                        'review 2511111',
-                        'abc',
+                  onPressed: () async {
+                    final reviewId = await rs.createReview(
+                        user!.uid,
+                        userData?['username'] ?? 'Anonymous',
                         widget.locationID,
-                        'Võ Minh Khôi',
-                        'https://i.imgur.com/xZ5946b.jpeg',
+                        userData?['username'] ?? 'Anonymous',
+                        userData?['avatar'] ?? 'https://i.imgur.com/xZ5946b.jpeg',
                         commentController.text,
                         selectedStars.toString());
+
+                    await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
+                      'reviews': FieldValue.arrayUnion([reviewId])
+                    });
+
                     Navigator.pop(context);
                     Navigator.pop(context);
                   },

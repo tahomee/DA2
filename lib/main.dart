@@ -13,6 +13,7 @@ import 'package:stour/screens/role_selection.dart';
 import 'package:stour/screens/profile.dart';
 import 'package:stour/screens/createMiniGame_screen.dart';
 import 'package:stour/screens/coupon_screen.dart';
+import 'package:stour/screens/forgot_password.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -48,6 +49,7 @@ class _MyAppState extends State<MyApp> {
         '/role': (context) => const RoleSelectionScreen(),
         '/profile': (context) => const Profile(),
         '/coupon': (context) => const CouponScreen(),
+        '/forgot': (context) => const ForgotPasswordScreen(),
       },
     );
   }

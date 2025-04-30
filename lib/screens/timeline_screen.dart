@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:stour/util/const.dart';
 import 'package:stour/util/places.dart';
 import 'package:stour/widgets/timeline_day.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
+
+import '../model/place.dart';
 
 class ScheduleScreen extends StatefulWidget {
   final DateTime departureDate;
@@ -94,118 +97,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
     return res;
   }
-//   List<List<Place>> getData() {
-//     List<List<Place>> locations = [];
-//
-//     // Hàm chuẩn hóa tên thành phố
-//     String normalizeCityName(String city) {
-//       final cleaned = city.trim().toLowerCase();
-//
-//       if (cleaned.contains("hồ chí minh") || cleaned.contains("tp. hồ chí minh") || cleaned.contains("ho chi minh")) {
-//         return "ho chi minh";
-//       }
-//       if (cleaned.contains("hà nội") || cleaned.contains("tp. hà nội") || cleaned.contains("ha noi")) {
-//         return "ha noi";
-//       }
-//
-//       return cleaned;
-//     }
-//
-//     final currentCity = normalizeCityName(currentLocationDetail[1]);
-//     final startTime = widget.startTime.hour + widget.startTime.minute / 60;
-//     final endTime = widget.endTime.hour + widget.endTime.minute / 60;
-//
-//     print("➡️ Kiểm tra với currentCity: $currentCity, startTime: $startTime, endTime: $endTime");
-// print("places $places");
-//     for (int i = 0; i < places.length; i++) {
-//       final place = places[i];
-//       final placeOpen = place.openTime;
-//       final placeClose = place.closeTime;
-//       final placeCity = normalizeCityName(place.city);
-//
-//       print("➡️ Kiểm tra: ${place.name} ở ${place.city} (Mở: $placeOpen, Đóng: $placeClose)");
-//
-//       bool biLoai = false;
-//
-//       // In giá trị thời gian để kiểm tra
-//       print("placeClose: $placeClose, startTime: $startTime, placeOpen: $placeOpen, endTime: $endTime");
-//
-//       if (placeClose < startTime) {
-//         print("❌ Bị loại vì đóng lúc $placeClose < thời gian bắt đầu $startTime");
-//         biLoai = true;
-//       }
-//
-//       if (placeOpen > endTime) {
-//         print("❌ Bị loại vì mở lúc $placeOpen > thời gian kết thúc $endTime");
-//         biLoai = true;
-//       }
-//
-//       if (placeCity != currentCity) {
-//         print("❌ Bị loại vì khác thành phố: '$placeCity' != '$currentCity'");
-//         biLoai = true;
-//       }
-//
-//       if (biLoai) continue;
-//
-//       // Nếu không bị loại:
-//       Place tmpFood = food[i % food.length];
-//       tmpFood.id = const Uuid().v4();
-//
-//       locations.add([place, tmpFood]);
-//       print("✅ Được chọn: ${place.name}");
-//     }
-//
-//     print("🎯 Tổng số cặp địa điểm hợp lệ: ${locations.length}");
-//     return locations;
-//   }
-//
-//
-//
-//   List<List<Place>> executeAlgo() {
-//     double budget = widget.maxBudget;
-//     int interval =
-//         widget.returnDate.difference(widget.departureDate).inDays + 1;
-//     double tMinus = (widget.endTime.hour + widget.endTime.minute / 60) -
-//         (widget.startTime.hour + widget.startTime.minute / 60);
-//     List<List<Place>> placesList = getData();
-//     List<List<Place>> res = [];
-//
-//     print(">> Số ngày: $interval");
-//     print(">> Budget: $budget");
-//     print(">> Time mỗi ngày: $tMinus");
-//     print(">> Danh sách địa điểm lọc được từ getData(): ${placesList.length}");
-//     for (var pair in placesList) {
-//       print("- ${pair[0].name} (${pair[0].price}đ / ${pair[0].duration}h), ${pair[1].name} (${pair[1].price}đ / ${pair[1].duration}h)");
-//     }
-//
-//     double tmpTime = tMinus;
-//     while (interval-- > 0 && placesList.isNotEmpty) {
-//       List<Place> tmpList = [];
-//       placesList = placesList.where((placePair) {
-//         int firstRes = _isValid(budget, tmpTime, placePair[0]);
-//         if (firstRes == 0) {
-//           return false;
-//         } else if (firstRes == 1) {
-//           return true;
-//         } else {
-//           tmpList.add(placePair[0]);
-//           budget -= placePair[0].price;
-//           tmpTime -= placePair[0].duration;
-//           if (_isValid(budget, tmpTime, placePair[1]) == 2) {
-//             tmpList.add(placePair[1]);
-//             budget -= placePair[1].price;
-//             tmpTime -= placePair[1].duration;
-//           }
-//           return false;
-//         }
-//       }).toList();
-//       tmpTime = tMinus;
-//       print("Ngày ${res.length + 1}: ${tmpList.length} địa điểm");
-//       res.add(tmpList);
-//     }
-//     print(">> Tổng số ngày có lịch trình: ${res.length}");
-//     return res;
-//   }
 
   @override
   Widget build(BuildContext context) {
@@ -380,19 +271,37 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               Color.fromARGB(255, 35, 52, 10),
                                         ),
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          savedTour.add(
-                                            SavedTourClass(
+                                        onPressed: () async {
+                                          try {
+                                            String? userId = FirebaseAuth.instance.currentUser?.uid;
+                                            if (userId == null) {
+                                              print("User not authenticated");
+                                              return; // Early exit if user is not authenticated
+                                            }
+
+                                            await saveTourToFirebase(userId, SavedTourClass(
                                               addedPlaces: res,
                                               name: tourNameController.text,
                                               timeSaved: DateTime.now(),
-                                            ),
-                                          );
-                                          tourNameController.clear();
-                                        });
-                                        Navigator.of(context).pop();
-                                      },
+                                            ));
+
+                                            // Clear the controller after saving
+                                            tourNameController.clear();
+
+                                            // Close the dialog
+                                            Navigator.of(context).pop();
+
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Tour saved successfully!')),
+                                            );
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Error saving tour: $e')),
+                                            );
+                                          }
+                                        }
+
+
                                     ),
                                   ],
                                 );
@@ -400,9 +309,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             );
                           },
                           child: const Text(
-                            'Lưu lịch trình này',
+                            'Lưu lịch trình',
                             style: TextStyle(
                               color: Color.fromARGB(255, 35, 52, 10),
+                              fontSize: 12,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -418,8 +328,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             child: ListView.builder(
               itemCount: res.length,
               itemBuilder: (ctx, idx) {
-                return Expanded(
-                    child: TimelineDay(res[idx], idx + 1, updateResultList));
+                return TimelineDay(res[idx], idx + 1, updateResultList);
+
               },
             ),
           ),

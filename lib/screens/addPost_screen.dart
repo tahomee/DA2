@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert'; // Nếu cần dùng jsonDecode trong CloudinaryService
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -6,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/cloudinary_service.dart';
 import 'package:stour/assets/icons/send_svg.dart' as sendIcon;
 import 'package:flutter_svg/flutter_svg.dart';
+import '../util/places.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -20,7 +23,26 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final CloudinaryService _cloudinaryService = CloudinaryService();
   List<File> _selectedImages = [];
   bool _isPosting = false;
+  Map<String, dynamic>? userData;
+  final User? user = FirebaseAuth.instance.currentUser; // Thêm dòng này để lấy user hiện tại
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+
+    _locationController.text = currentLocationDetail[1]; // Set giá trị địa điểm luôn khi mở screen
+  }
+  Future<void> _loadUserData() async {
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
+      if (doc.exists) {
+        setState(() {
+          userData = doc.data();
+        });
+      }
+    }
+  }
   Future<void> _pickImages() async {
     final pickedFiles = await ImagePicker().pickMultiImage();
     if (pickedFiles.isNotEmpty) {
@@ -48,21 +70,28 @@ class _AddPostScreenState extends State<AddPostScreen> {
         _selectedImages.map((file) => file.path).toList(),
       );
 
-      // Lưu bài viết lên Firestore
-      await FirebaseFirestore.instance.collection('posts').add({
+      // Tạo bài post mới
+      final postRef = await FirebaseFirestore.instance.collection('posts').add({
         'content': _postController.text,
         'location': _locationController.text,
         'imageUrls': imageUrls,
         'createdAt': Timestamp.now(),
-        'authorId': 'current_user_id',
+        'authorId': user?.uid,
         'likes': 0,
+        'likedBy': [],
         'comments': 0,
+        'shares':0,
+      });
+
+      // Cập nhật field "posts" trong document user
+      await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
+        'posts': FieldValue.arrayUnion([postRef.id])  // thêm id bài post vào mảng posts
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đăng bài thành công')),
       );
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true); // Trả về 'true' khi đăng thành công
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi khi đăng bài: $e')),
@@ -73,6 +102,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       });
     }
   }
+
 
   void _removeImage(int index) {
     setState(() {
@@ -91,14 +121,19 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('THÊM BÀI VIẾT', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
+        title: const Text(
+          'THÊM BÀI VIẾT',
+          style: TextStyle(
+            color: Color(0xFF3B6332),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: _isPosting ? null : _submitPost,
             child: _isPosting
                 ? const CircularProgressIndicator()
-                // : const Text('Đăng', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                  : SvgPicture.string(sendIcon.sendSVG, height: 40, width: 40),
+                : SvgPicture.string(sendIcon.sendSVG, height: 40, width: 40),
           ),
         ],
       ),
@@ -109,16 +144,23 @@ class _AddPostScreenState extends State<AddPostScreen> {
           children: [
             Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 20,
-                  backgroundImage: NetworkImage(
-                      "https://i.pinimg.com/236x/0a/b5/9e/0ab59e7c8e7a1213ff1ee891e98e06ae.jpg?nii=t"),
+                  backgroundImage: userData?['avatar'] != null
+                      ? NetworkImage(userData?['avatar'])
+                      : const AssetImage('assets/default_avatar.png') as ImageProvider,
                 ),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("HBT", style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
+                    Text(
+                      userData?['username'] ?? "Người dùng",
+                      style: const TextStyle(
+                        color: Color(0xFF3B6332),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Text("Bây giờ", style: TextStyle(color: Colors.grey[600])),
                   ],
                 ),
@@ -140,7 +182,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
             TextField(
               controller: _locationController,
               decoration: InputDecoration(
-                hintText: 'Chọn địa điểm...',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 prefixIcon: const Icon(Icons.location_on, color: Color(0xFFFFD166)),
               ),
@@ -148,7 +189,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
             const SizedBox(height: 20),
             const Text('File đính kèm', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            // Hiển thị danh sách ảnh đã chọn
             if (_selectedImages.isNotEmpty)
               SizedBox(
                 height: 120,
@@ -172,7 +212,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                         ),
                         Positioned(
                           top: 5,
-                          right: 15,
+                          right: 5,
                           child: GestureDetector(
                             onTap: () => _removeImage(index),
                             child: Container(
@@ -190,11 +230,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   },
                 ),
               ),
-            // Nút thêm ảnh
             GestureDetector(
               onTap: _pickImages,
               child: Container(
                 height: 150,
+                width: double.infinity,
+                margin: const EdgeInsets.only(top: 10),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
                   borderRadius: BorderRadius.circular(10),
