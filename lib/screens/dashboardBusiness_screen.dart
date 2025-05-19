@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stour/screens/trending.dart';
@@ -26,7 +27,6 @@ class _GoogleMapsControllerState extends State<GoogleMapsController> {
   GoogleMapController? mapController;
   LatLng _center = const LatLng(10.870051045334415, 106.80301118465547);
   final Set<Marker> _markers = {};
-
   @override
   void initState() {
     super.initState();
@@ -121,6 +121,17 @@ class MenuBusiness extends StatefulWidget {
 class _MenuBusinessState extends State<MenuBusiness> {
   late Future<List<Place>> places;
   late Future<List<Place>> food;
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacementNamed(context, '/signin');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout failed: $e')),
+      );
+    }
+  }
   @override
   void initState() {
     super.initState();
@@ -243,6 +254,18 @@ class _MenuBusinessState extends State<MenuBusiness> {
                     }
                   },
                 ),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _logout(context),
+                    icon: const Icon(Icons.logout),
+                    label: const Text("Đăng xuất"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromARGB(128, 255, 209, 102),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
 
                 const SizedBox(height: 30),
               ],

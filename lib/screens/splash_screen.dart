@@ -17,11 +17,16 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _animateLogo();
-    _checkLoginStatus();
+    _animateAndCheck();
   }
-  void _checkLoginStatus() async {
-    await Future.delayed(const Duration(seconds: 2)); // để logo fade in
+
+  void _animateAndCheck() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() {
+      _opacity = 1;
+    });
+
+    await Future.delayed(const Duration(seconds: 2));
 
     final user = FirebaseAuth.instance.currentUser;
 
@@ -35,30 +40,20 @@ class _SplashScreenState extends State<SplashScreen>
         final role = userDoc.data()?['role'];
 
         if (role == 'business') {
-          Navigator.pushReplacementNamed(context, '/coupon');
+          Navigator.pushReplacementNamed(context, '/menuBusiness');
         } else if (role == 'traveler') {
           Navigator.pushReplacementNamed(context, '/home');
         } else if (role == 'admin') {
           Navigator.pushReplacementNamed(context, '/profile');
         } else {
-          Navigator.pushReplacementNamed(context, '/signin'); // Nếu role lỗi
+          Navigator.pushReplacementNamed(context, '/signin');
         }
       } else {
-        Navigator.pushReplacementNamed(context, '/signin'); // Không tìm thấy user
+        Navigator.pushReplacementNamed(context, '/signin');
       }
     } else {
-      // Chưa đăng nhập
       Navigator.pushReplacementNamed(context, '/signin');
     }
-  }
-
-  void _animateLogo() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() {
-      _opacity = 1;
-    });
-    await Future.delayed(const Duration(seconds: 2));
-    Navigator.pushReplacementNamed(context, '/signin');
   }
 
   @override
@@ -70,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
           opacity: _opacity,
           duration: const Duration(seconds: 2),
           child: Image.asset(
-            'assets\\splash_screen.png',
+            'assets/splash_screen.png', // đổi \\ thành /
             height: 150,
           ),
         ),

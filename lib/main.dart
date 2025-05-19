@@ -47,16 +47,30 @@ class _MyAppState extends State<MyApp> {
   void checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    setState(() {
-      _isLoggedIn = isLoggedIn;
-    });
+    String? role = prefs.getString('role');
+
+    if (isLoggedIn && role != null) {
+      if (role == 'business') {
+        Navigator.pushReplacementNamed(context, '/menuBusiness');
+      } else if (role == 'traveler') {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else if (role == 'admin') {
+        Navigator.pushReplacementNamed(context, '/profile');
+      }
+    } else {
+      setState(() {
+        _isLoggedIn = false; // Show SplashScreen
+      });
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: Constants.appName,
-      home: _isLoggedIn ? const MainScreen() : const SplashScreen(),      theme: ThemeData(
+      home: _isLoggedIn ? const SizedBox() : const SplashScreen(), // dùng SizedBox rỗng để chờ checkLoginStatus
+      theme: ThemeData(
         fontFamily: 'Montserrat',
       ),
       routes: {
