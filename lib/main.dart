@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stour/screens/main_screen.dart';
 import 'package:stour/util/const.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -35,13 +36,27 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  void checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    setState(() {
+      _isLoggedIn = isLoggedIn;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: Constants.appName,
-      home: const SplashScreen(),
-      theme: ThemeData(
+      home: _isLoggedIn ? const MainScreen() : const SplashScreen(),      theme: ThemeData(
         fontFamily: 'Montserrat',
       ),
       routes: {
@@ -52,7 +67,7 @@ class _MyAppState extends State<MyApp> {
         '/profile': (context) => const Profile(),
         '/coupon': (context) => const CouponScreen(),
         '/forgot': (context) => const ForgotPasswordScreen(),
-          '/menuBusiness': (context) => const MenuBusiness(),
+        '/menuBusiness': (context) => const MenuBusiness(),
       },
     );
   }

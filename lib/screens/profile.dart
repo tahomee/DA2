@@ -94,9 +94,10 @@ class _ProfileState extends State<Profile> {
               ProfileImage(size: size, docId: FirebaseAuth.instance.currentUser?.uid ?? ""),
               profileInfo(),
               profileActivity(),
-              profileEvents(size),
+              if (!_isLoading && _profileData != null)
+                profileEvents(size),
               SizedBox(
-                height: 550, // Constrain the height of the PostScreen
+                height: 5530, // Constrain the height of the PostScreen
                 child: _pages[_selectedEvent],
               ),
             ],
