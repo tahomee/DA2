@@ -116,11 +116,13 @@ class MenuBusiness extends StatefulWidget {
   State<MenuBusiness> createState() {
     return _MenuBusinessState();
   }
+
 }
 
+
 class _MenuBusinessState extends State<MenuBusiness> {
-  late Future<List<Place>> places;
-  late Future<List<Place>> food;
+  late Stream<List<Place>> places;
+  late Stream<List<Place>> food;
 
   Future<void> _logout(BuildContext context) async {
     try {
@@ -135,8 +137,10 @@ class _MenuBusinessState extends State<MenuBusiness> {
   @override
   void initState() {
     super.initState();
-    places = getAllPlaceFood('stourplace1');
-    food = getAllPlaceFood('food');
+    places = getAllPlaceFoodStream('stourplace1');
+    food = getAllPlaceFoodStream('food');
+
+
   }
 
   @override
@@ -211,8 +215,8 @@ class _MenuBusinessState extends State<MenuBusiness> {
                   child: GoogleMapsController(),
                 ),
                 const SizedBox(height: 20.0),
-                FutureBuilder<List<Place>>(
-                  future: places,
+                StreamBuilder<List<Place>>(
+                  stream: places,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -226,15 +230,15 @@ class _MenuBusinessState extends State<MenuBusiness> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           buildPlaceRow('Địa Điểm Văn Hóa', places, context),
-                          buildPlaceList(context, places),
+                          buildPlaceList(context, places, 'stourplace1'),
                         ],
                       );
                     }
                   },
                 ),
                 const SizedBox(height: 5.0),
-                FutureBuilder<List<Place>>(
-                  future: food,
+                StreamBuilder<List<Place>>(
+                  stream: food,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -248,7 +252,7 @@ class _MenuBusinessState extends State<MenuBusiness> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           buildPlaceRow('Đặc Sản', food, context),
-                          buildPlaceList(context, food),
+                          buildPlaceList(context, food, 'food'),
                         ],
                       );
                     }
@@ -277,7 +281,7 @@ class _MenuBusinessState extends State<MenuBusiness> {
   }
 }
 
-Widget buildPlaceList(BuildContext context, List<Place> source) {
+Widget buildPlaceList(BuildContext context, List<Place> source, String collectionName) {
   return SizedBox(
     height: MediaQuery.of(context).size.height / 2.4,
     width: MediaQuery.of(context).size.width,
@@ -290,7 +294,90 @@ Widget buildPlaceList(BuildContext context, List<Place> source) {
         Place place = source[index];
         return Padding(
           padding: const EdgeInsets.only(right: 10.0),
-          child: PlaceCard(place: place),
+          child: GestureDetector(
+            onLongPress: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (BuildContext context) {
+                  return SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.edit),
+                          title: const Text('Chỉnh sửa'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AddPlaceScreen(
+                                  placeData: {
+                                    'id': place.id,
+                                    'name': place.name,
+                                    'address': place.address,
+                                    'rating': place.rating,
+                                    'image': place.img,
+                                    'price': place.price,
+                                    'history': place.history,
+                                    'duration': place.duration,
+                                    'opentime': place.openTime,
+                                    'closetime': place.closeTime,
+                                    'district': place.district,
+                                    'city': place.city,
+                                  },
+                                  placeId: place.id,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.delete),
+                          title: const Text('Xóa'),
+                          onTap: () async {
+                            final scaffoldContext = context;
+                            Navigator.pop(context);
+                            final shouldDelete = await showDialog<bool>(
+                              context: scaffoldContext,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Xác nhận'),
+                                content: const Text('Bạn có chắc chắn muốn xóa địa điểm này không?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text('Hủy'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text('Xóa'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (shouldDelete == true) {
+                              await FirebaseFirestore.instance
+                                  .collection(collectionName)
+                                  .doc(place.id)
+                                  .delete();
+                              if (!context.mounted) return;
+                              if (scaffoldContext.mounted) {
+                                ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                                  const SnackBar(content: Text('Xóa thành công')),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            child: PlaceCard(place: place),
+          ),
         );
       },
     ),

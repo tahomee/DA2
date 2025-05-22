@@ -150,6 +150,76 @@ class _CouponScreen1State extends State<CouponScreen1> {
                       ),
                     );
                   },
+                  onLongPress: () {
+                    showModalBottomSheet(
+                      context: context,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
+                      builder: (context) => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            title: const Text('Chỉnh sửa minigame'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              // TODO: Thêm logic mở màn hình chỉnh sửa ở đây
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreateMinigameScreen(
+                                    minigameId: snapshot.data!.docs[index].id,
+                                    existingData: snapshot.data!.docs[index].data() as Map<String, dynamic>,
+                                  ),
+
+                                ),
+                              );
+
+                            },
+                          ),
+                          ListTile(
+                            title: const Text('Xóa minigame'),
+                            onTap: () async {
+                              Navigator.pop(context);
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Xác nhận',                                      textAlign: TextAlign.center,
+                                  ),
+                                  content: SizedBox(
+                                    width: 200,
+                                    child: const Text(
+                                      'Bạn có chắc muốn xóa minigame này không?',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      child: const Text('Hủy'),
+                                      onPressed: () => Navigator.of(context).pop(false),
+                                    ),
+                                    TextButton(
+                                      child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+                                      onPressed: () => Navigator.of(context).pop(true),
+                                    ),
+                                  ],
+                                ),
+
+                              );
+
+                              if (confirm == true) {
+                                await _firestore.collection('minigames').doc(coupon.id).delete();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Đã xóa minigame')),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+
                 ),
               );
             },

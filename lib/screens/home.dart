@@ -116,13 +116,16 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  late Future<List<Place>> places;
-  late Future<List<Place>> food;
+  late Stream<List<Place>> places;
+  late Stream<List<Place>> food;
   @override
   void initState() {
     super.initState();
-    places = getAllPlaceFood('stourplace1');
-    food = getAllPlaceFood('food');
+    Stream<List<Place>> placesStream = getAllPlaceFoodStream('stourplace1');
+    Stream<List<Place>> foodStream = getAllPlaceFoodStream('food');
+
+    places = placesStream;
+    food = foodStream;
   }
 
   @override
@@ -162,8 +165,8 @@ class _HomeState extends State<Home> {
                   child: GoogleMapsController(),
                 ),
                 const SizedBox(height: 20.0),
-                FutureBuilder<List<Place>>(
-                  future: places,
+                StreamBuilder<List<Place>>(
+                  stream: places,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -184,8 +187,8 @@ class _HomeState extends State<Home> {
                   },
                 ),
                 const SizedBox(height: 5.0),
-                FutureBuilder<List<Place>>(
-                  future: food,
+                StreamBuilder<List<Place>>(
+                  stream: food,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());

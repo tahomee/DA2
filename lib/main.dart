@@ -23,8 +23,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
 );
 
-  getAllPlaceFood('stourplace1');
-  getAllPlaceFood('food');
+  getAllPlaceFoodStream('stourplace1');
+  getAllPlaceFoodStream('food');
   // const GoogleMapsController();
   runApp(const MyApp());
 }

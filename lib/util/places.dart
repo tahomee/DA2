@@ -47,16 +47,17 @@ class Place {
     );
   }
 }
-
 class SavedTourClass {
   final List<List<Place>> addedPlaces;
   String name;
   final DateTime timeSaved;
+  final String id; // Thêm id
 
   SavedTourClass({
     required this.addedPlaces,
     required this.name,
     required this.timeSaved,
+    required this.id,
   });
 
   factory SavedTourClass.fromDocument(DocumentSnapshot doc) {
@@ -95,13 +96,14 @@ class SavedTourClass {
     List<List<Place>> addedPlaces = sortedEntries.map((e) => e.value).toList();
 
     return SavedTourClass(
+      id: doc.id,  // lấy id document
       name: data['name'] ?? '',
       timeSaved: DateTime.tryParse(data['timeSaved'] ?? '') ?? DateTime.now(),
       addedPlaces: addedPlaces,
     );
   }
-
 }
+
 
 
 List<String> currentLocationDetail = [];

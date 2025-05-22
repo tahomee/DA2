@@ -7,14 +7,16 @@ import 'package:collection/collection.dart';
 
 import '../screens/details.dart';
 
-Future<List<Place>> getAllPlaceFood(String collection) async {
-  try {
-    CollectionReference place = FirebaseFirestore.instance.collection(collection);
-    QuerySnapshot snapshot = await place.get();
+Stream<List<Place>> getAllPlaceFoodStream(String collection) {
+  return FirebaseFirestore.instance
+      .collection(collection)
+      .snapshots()
+      .map((snapshot) {
+    List<Place> result = [];
 
-    for (var documentSnapshot in snapshot.docs) {
-      if (documentSnapshot.exists) {
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+    for (var doc in snapshot.docs) {
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
         Place tmpPlace = Place(
           id: data['id'] ?? '',
@@ -31,23 +33,17 @@ Future<List<Place>> getAllPlaceFood(String collection) async {
           openTime: data['opentime'] ?? 0,
         );
 
-        if (collection == 'stourplace1') {
-          if (places.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
-            places.add(tmpPlace);
-          }
-        } else {
-          if (food.firstWhereOrNull((element) => element.id == tmpPlace.id) == null) {
-            food.add(tmpPlace);
-          }
+        // Thêm nếu chưa tồn tại trong result (giống logic cũ)
+        if (result.firstWhereOrNull((e) => e.id == tmpPlace.id) == null) {
+          result.add(tmpPlace);
         }
       }
     }
-  } catch (e) {
-    print("❌ Error fetching data from Firestore ($collection): $e");
-  }
 
-  return collection == 'stourplace1' ? places : food;
+    return result;
+  });
 }
+
 void printPlaces() {
   if (places.isEmpty) {
     print('📭 Không có địa điểm nào trong danh sách.');

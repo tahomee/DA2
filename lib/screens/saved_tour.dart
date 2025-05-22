@@ -80,6 +80,8 @@ class _SavedTourState extends State<SavedTour> {
   }
 
   void _showRenameDialog(BuildContext context, int index) {
+    _tourNameController.text = savedTours[index].name; // Hiển thị tên cũ
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -105,11 +107,25 @@ class _SavedTourState extends State<SavedTour> {
                   style: TextStyle(
                     color: Color.fromARGB(255, 35, 52, 10),
                   )),
-              onPressed: () {
-                setState(() {
-                  savedTours[index].name = _tourNameController.text;
-                  _tourNameController.clear();
-                });
+              onPressed: () async {
+                String newName = _tourNameController.text.trim();
+                if (newName.isNotEmpty) {
+                  String tourId = savedTours[index].id;
+
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('tours')
+                        .doc(tourId)
+                        .update({'name': newName});
+
+                    setState(() {
+                      savedTours[index].name = newName;
+                    });
+                  } catch (e) {
+                    print("Lỗi khi cập nhật tên tour: $e");
+                  }
+                }
+                _tourNameController.clear();
                 Navigator.of(context).pop();
               },
             ),
@@ -143,18 +159,40 @@ class _SavedTourState extends State<SavedTour> {
                     style: TextStyle(
                       color: Color.fromARGB(255, 35, 52, 10),
                     )),
-                onTap: () {
+                onTap: () async {
                   Navigator.of(ctx).pop();
-                  setState(() {
-                    savedTours.removeAt(index);
-                  });
-                  // TODO: Xóa khỏi Firestore luôn nếu muốn
+
+                  final userId = FirebaseAuth.instance.currentUser?.uid;
+                  if (userId == null) {
+                    print("Không có người dùng đăng nhập");
+                    return;
+                  }
+
+                  String tourId = savedTours[index].id;
+
+                  try {
+                    // Xóa tourId khỏi danh sách saveTours của user
+                    final userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+                    await userRef.update({
+                      'saveTours': FieldValue.arrayRemove([tourId])
+                    });
+
+                    // Nếu bạn muốn xóa luôn tour khỏi collection 'tours', bỏ comment dòng dưới:
+                    // await FirebaseFirestore.instance.collection('tours').doc(tourId).delete();
+
+                    setState(() {
+                      savedTours.removeAt(index);
+                    });
+                  } catch (e) {
+                    print("Lỗi khi xóa tour: $e");
+                  }
                 },
               ),
             ],
           );
         });
   }
+
 
   @override
   Widget build(context) {

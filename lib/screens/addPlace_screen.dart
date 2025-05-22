@@ -11,7 +11,10 @@ import '../services/cloudinary_service.dart';
 const uuid = Uuid();
 
 class AddPlaceScreen extends StatefulWidget {
-  const AddPlaceScreen({super.key});
+  final Map<String, dynamic>? placeData;
+  final String? placeId;
+
+  const AddPlaceScreen({super.key, this.placeData, this.placeId});
 
   @override
   State<AddPlaceScreen> createState() => _AddPlaceScreenState();
@@ -23,20 +26,22 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   final _addressController = TextEditingController();
   final _openTimeController = TextEditingController();
   final _closeTimeController = TextEditingController();
-  final _minPriceController = TextEditingController();
-  final _maxPriceController = TextEditingController();
+  final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _cityController = TextEditingController();
   final _districtController = TextEditingController();
-
-  String _selectedType = 'Du lịch';
-  List<File> _selectedImages = [];
-  double? _rating;
+  final _durationController = TextEditingController();
+  final _historyController = TextEditingController();
+  final _imgController = TextEditingController();
+  String? _rating;
   LatLng? _selectedLocation;
   bool _isLoading = false;
   late GoogleMapController _mapController;
+  File? _selectedImage;
+  String? _oldImageUrl;
 
-  final List<String> _placeTypes = ['Du lịch', 'Ăn uống', 'Giải trí'];
+  final List<String> _placeTypes = ['Đặc Sản', 'Văn Hóa'];
+  String _selectedType = 'Đặc Sản'; // hoặc 'Văn Hóa' tùy bạn chọn mặc định
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _picker = ImagePicker();
   final CloudinaryService _cloudinaryService = CloudinaryService();
@@ -44,7 +49,33 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    if (widget.placeData != null) {
+      _initializeFormWithData(widget.placeData!);
+    } else {
+      _getCurrentLocation();
+    }
+  }
+
+  void _initializeFormWithData(Map<String, dynamic> data) {
+    _nameController.text = data['name'] ?? '';
+    _selectedType = data['type'] ?? 'Văn Hóa';
+    _addressController.text = data['address'] ?? '';
+    _cityController.text = data['city'] ?? '';
+    _districtController.text = data['district'] ?? '';
+    _openTimeController.text = data['opentime']?.toString() ?? '';
+    _closeTimeController.text = data['closetime']?.toString() ?? '';
+    _historyController.text = data['history'] ?? '';
+    _imgController.text = data['img'] ?? '';
+    _durationController.text = data['duration']?.toString() ?? '0';
+    _priceController.text = data['price']?.toString() ?? '';
+    _rating = data['rating']?.toString() ?? '3';
+    if (data['image'] != null && (data['image'] as String).isNotEmpty) {
+      _oldImageUrl = data['image'];
+    }
+
+    if (data['latitude'] != null && data['longitude'] != null) {
+      _selectedLocation = LatLng(data['latitude'], data['longitude']);
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -77,19 +108,13 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     }
   }
 
-  Future<void> _pickImages() async {
+  Future<void> _pickImage() async {
     try {
-      final List<XFile>? pickedFiles = await _picker.pickMultiImage();
-      if (pickedFiles != null) {
-        if (_selectedImages.length + pickedFiles.length > 5) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Chỉ được chọn tối đa 5 ảnh')),
-          );
-          return;
-        }
-
+      final XFile? pickedFile = await _picker.pickImage(
+          source: ImageSource.gallery);
+      if (pickedFile != null) {
         setState(() {
-          _selectedImages.addAll(pickedFiles.map((x) => File(x.path)));
+          _selectedImage = File(pickedFile.path);
         });
       }
     } catch (e) {
@@ -97,21 +122,19 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     }
   }
 
-  Future<List<String>> _uploadImagesToCloudinary(List<File> images) async {
-    List<String> imageUrls = [];
-    for (var image in images) {
-      try {
-        // Assuming `image.path` is passed to the upload method
-        final uploadedUrls = await _cloudinaryService.uploadImages(
-          [image.path], // Passing image path here
-        );
-        imageUrls.addAll(uploadedUrls); // Add the returned URLs to the list
-      } catch (e) {
-        print('Error uploading image: $e');
+
+  Future<String?> _uploadImageToCloudinary(File image) async {
+    try {
+      final uploadedUrls = await _cloudinaryService.uploadImages([image.path]);
+      if (uploadedUrls.isNotEmpty) {
+        return uploadedUrls.first;
       }
+    } catch (e) {
+      print('Lỗi tải ảnh lên: $e');
     }
-    return imageUrls;
+    return null;
   }
+
 
   Future<void> _submitPlace() async {
     if (!_formKey.currentState!.validate()) return;
@@ -123,19 +146,22 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
       return;
     }
 
-    if (_selectedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Chọn ít nhất một ảnh')),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
-      List<String> imageUrls = await _uploadImagesToCloudinary(_selectedImages);
+      String? imageUrl;
 
-      final newPlace = {
+      if (_selectedImage != null) {
+        imageUrl = await _uploadImageToCloudinary(_selectedImage!);
+      } else {
+        imageUrl = _oldImageUrl;
+      }
+
+      final String newId = uuid.v4(); // id dạng string
+      final String collectionName = _selectedType == 'Văn Hóa' ? 'stourplace1' : 'food';
+
+      final placeData = {
+        'id': widget.placeId ?? newId,
         'name': _nameController.text,
         'type': _selectedType,
         'latitude': _selectedLocation!.latitude,
@@ -143,28 +169,38 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
         'address': _addressController.text,
         'city': _cityController.text,
         'district': _districtController.text,
-        'openTime': _openTimeController.text,
-        'closeTime': _closeTimeController.text,
+        'opentime': int.tryParse(_openTimeController.text),
+        'closetime': int.tryParse(_closeTimeController.text),
         'rating': _rating ?? 3.0,
-        'minPrice': int.tryParse(_minPriceController.text) ?? 0,
-        'maxPrice': int.tryParse(_maxPriceController.text) ?? 0,
-        'description': _descriptionController.text,
-        'imageUrls': imageUrls,
-        'mainImage': imageUrls.first,
-        'createdAt': FieldValue.serverTimestamp(),
+        'price': int.tryParse(_priceController.text) ?? 0,
+        'history': _descriptionController.text,
+        'duration': int.tryParse(_durationController.text) ?? 0,
+        'image': imageUrl ?? '',
         'updatedAt': FieldValue.serverTimestamp(),
         'status': 'active',
       };
 
-      await _firestore.collection('stourplace1').add(newPlace);
+      final collectionRef = _firestore.collection(collectionName);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Thêm địa điểm thành công!')),
-      );
+      if (widget.placeId != null) {
+        // Update
+        await collectionRef.doc(widget.placeId).update(placeData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cập nhật địa điểm thành công!')),
+        );
+      } else {
+        // Add new with custom ID
+        placeData['createdAt'] = FieldValue.serverTimestamp();
+        await collectionRef.doc(newId).set(placeData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thêm địa điểm thành công!')),
+        );
+      }
+
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi thêm địa điểm: $e')),
+        SnackBar(content: Text('Lỗi: $e')),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -174,7 +210,10 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('THÊM ĐỊA ĐIỂM')),
+      appBar: AppBar(
+        title: Text(
+            widget.placeId != null ? 'CHỈNH SỬA ĐỊA ĐIỂM' : 'THÊM ĐỊA ĐIỂM'),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -194,10 +233,13 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
               _buildTimeFields(),
               _buildPriceFields(),
               _buildDescriptionField(),
+              const SizedBox(height: 10),
               _buildImagePicker(),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitPlace,
-                child: const Text('THÊM ĐỊA ĐIỂM'),
+                child: Text(
+                    widget.placeId != null ? 'CẬP NHẬT' : 'THÊM ĐỊA ĐIỂM'),
               ),
             ],
           ),
@@ -215,7 +257,8 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (value) => (value == null || value.isEmpty)
+        validator: (value) =>
+        (value == null || value.isEmpty)
             ? 'Vui lòng nhập $label'
             : null,
       ),
@@ -273,9 +316,11 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   Widget _buildTimeFields() {
     return Row(
       children: [
-        Expanded(child: _buildTextField('Giờ mở cửa (HH:MM)', _openTimeController)),
+        Expanded(
+            child: _buildTextField('Giờ mở cửa (HH:MM)', _openTimeController)),
         const SizedBox(width: 10),
-        Expanded(child: _buildTextField('Giờ đóng cửa (HH:MM)', _closeTimeController)),
+        Expanded(child: _buildTextField(
+            'Giờ đóng cửa (HH:MM)', _closeTimeController)),
       ],
     );
   }
@@ -283,24 +328,29 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   Widget _buildPriceFields() {
     return Row(
       children: [
-        Expanded(child: _buildTextField('Giá thấp nhất', _minPriceController)),
+        Expanded(child: _buildTextField('Giá tiền', _priceController)),
         const SizedBox(width: 10),
-        Expanded(child: _buildTextField('Giá cao nhất', _maxPriceController)),
+        Expanded(
+            child: _buildTextField('Thời gian dừng chân', _durationController)),
       ],
     );
   }
 
   Widget _buildDescriptionField() {
-    return TextFormField(
-      controller: _descriptionController,
-      maxLines: 4,
-      decoration: const InputDecoration(
-        labelText: 'Mô tả địa điểm',
-        border: OutlineInputBorder(),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: TextFormField(
+        controller: _historyController,
+        maxLines: 4,
+        decoration: const InputDecoration(
+          labelText: 'Mô tả địa điểm',
+          border: OutlineInputBorder(),
+        ),
+        validator: (value) =>
+        (value == null || value.isEmpty)
+            ? 'Vui lòng nhập mô tả'
+            : null,
       ),
-      validator: (value) => (value == null || value.isEmpty)
-          ? 'Vui lòng nhập mô tả'
-          : null,
     );
   }
 
@@ -308,35 +358,25 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Ảnh địa điểm (tối đa 5 ảnh):'),
+        const Text('Ảnh địa điểm'),
         const SizedBox(height: 8),
-        if (_selectedImages.isNotEmpty)
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _selectedImages.length,
-              itemBuilder: (context, index) => Stack(
-                children: [
-                  Image.file(_selectedImages[index], width: 100, fit: BoxFit.cover),
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () =>
-                          setState(() => _selectedImages.removeAt(index)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        GestureDetector(
+          onTap: _pickImage,
+          child: _selectedImage != null
+              ? Image.file(
+              _selectedImage!, width: 150, height: 150, fit: BoxFit.cover)
+              : (_oldImageUrl != null && _oldImageUrl!.isNotEmpty)
+              ? Image.network(
+              _oldImageUrl!, width: 150, height: 150, fit: BoxFit.cover)
+              : Container(
+            width: 150,
+            height: 150,
+            color: Colors.grey[300],
+            child: const Icon(Icons.add_a_photo, size: 40),
           ),
-        ElevatedButton(
-          onPressed: _pickImages,
-          child: const Text('Chọn ảnh'),
         ),
       ],
     );
   }
+
 }

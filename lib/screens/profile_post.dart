@@ -5,6 +5,7 @@ import 'package:http/http.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:stour/util/const.dart';
 
+import 'addPost_screen.dart';
 import 'comment_screen.dart';
 
 class PostScreen extends StatefulWidget {
@@ -61,6 +62,7 @@ class _PostScreenState extends State<PostScreen> {
                     likes: data['likes'] ?? 0,
                     comments: data['comments'] ?? 0,
                     shares: data['shares']??0,
+                    authorId: authorId,
                   );
                 }
                 final userData = userSnapshot.data!.data() as Map<String, dynamic>;
@@ -76,7 +78,7 @@ class _PostScreenState extends State<PostScreen> {
                   likes: data['likes'] ?? 0,
                   comments: data['comments'] ?? 0,
                   shares: data['shares']??0,
-
+                  authorId: authorId,
                 );
               },
             );
@@ -86,6 +88,7 @@ class _PostScreenState extends State<PostScreen> {
       },
     );
   }
+
 
   String _getTimeAgo(Timestamp timestamp) {
     final now = DateTime.now();
@@ -114,6 +117,7 @@ class _PostScreenState extends State<PostScreen> {
     required int likes,
     required int comments,
     required int shares,
+    required String authorId,
 
   }) {
     return Container(
@@ -159,19 +163,88 @@ class _PostScreenState extends State<PostScreen> {
                       ),
                     ],
                   ),
-                  PopupMenuButton(
+                  PopupMenuButton<String>(
+                    onSelected: (value) async {
+                      if (value == "delete") {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("Xác nhận xóa"),
+                            content: const Text("Bạn có chắc chắn muốn xóa bài viết này?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text("Hủy"),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text("Xóa"),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          try {
+                            // 1. Xóa bài viết trong posts
+                            await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
+
+                            // 2. Cập nhật document user để xóa postId trong mảng posts
+                            if (authorId.isNotEmpty) {
+                              final userRef = FirebaseFirestore.instance.collection('users').doc(authorId);
+                              await userRef.update({
+                                'posts': FieldValue.arrayRemove([postId]),
+                              });
+                            }
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Bài viết đã được xóa")),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Xóa bài viết thất bại: $e")),
+                            );
+                          }
+                        }
+                      }
+                     else if (value == "edit") {
+                        final currentPostData = {
+                          'content': content,
+                          'location': location,
+                          'imageUrls': imageUrls,
+                        };
+
+                        final updated = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddPostScreen(
+                              existingPost: currentPostData,
+                              postId: postId,
+                            ),
+                          ),
+                        );
+
+                        if (updated == true) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Cập nhật bài viết thành công')),
+                          );
+                        }
+                      }
+                    },
                     itemBuilder: (BuildContext context) => [
                       const PopupMenuItem(
                         value: "delete",
-                        child: Text("Xóa Bài Viết"),
+                        child: Text("Xóa bài viết"),
                       ),
                       const PopupMenuItem(
-                        value: "save",
-                        child: Text("Lưu Bài Viết"),
+                        value: "edit",
+                        child: Text("Chỉnh sửa bài viết"),
                       ),
                     ],
-                    child: Icon(Icons.more_vert, color: Constants.text),
+                    child: const Icon(Icons.more_vert, color: Colors.black),
                   ),
+
+
                 ],
               ),
             ),

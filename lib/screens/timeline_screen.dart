@@ -279,12 +279,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               return; // Early exit if user is not authenticated
                                             }
 
-                                            await saveTourToFirebase(userId, SavedTourClass(
+                                             await saveTourToFirebase(userId, SavedTourClass(
+                                              id: const Uuid().v4(), // Generate a unique ID
                                               addedPlaces: res,
                                               name: tourNameController.text,
                                               timeSaved: DateTime.now(),
                                             ));
-
                                             // Clear the controller after saving
                                             tourNameController.clear();
 
