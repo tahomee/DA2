@@ -4,6 +4,8 @@ import 'package:stour/util/places.dart';
 import 'package:stour/widgets/timeline_day.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'addPost_screen.dart';
+
 // ignore: must_be_immutable
 class ViewSavedTour extends StatefulWidget {
   SavedTourClass savedTour;
@@ -46,6 +48,7 @@ class _ViewSavedTourState extends State<ViewSavedTour> {
             Navigator.pop(context);
           },
         ),
+
       ),
       body: Column(
         children: [
@@ -130,3 +133,4 @@ class _ViewSavedTourState extends State<ViewSavedTour> {
     );
   }
 }
+

@@ -52,12 +52,19 @@ class SavedTourClass {
   String name;
   final DateTime timeSaved;
   final String id; // Thêm id
+  final DateTime departureDate ;
+  final DateTime returnDate ;
+  bool completed;
 
   SavedTourClass({
     required this.addedPlaces,
     required this.name,
     required this.timeSaved,
     required this.id,
+    required this.departureDate,
+    required this.returnDate,
+    this.completed = false,
+
   });
 
   factory SavedTourClass.fromDocument(DocumentSnapshot doc) {
@@ -96,10 +103,18 @@ class SavedTourClass {
     List<List<Place>> addedPlaces = sortedEntries.map((e) => e.value).toList();
 
     return SavedTourClass(
-      id: doc.id,  // lấy id document
+      id: doc.id,
       name: data['name'] ?? '',
-      timeSaved: DateTime.tryParse(data['timeSaved'] ?? '') ?? DateTime.now(),
+      timeSaved: DateTime.tryParse(data['timeSaved']) ?? DateTime.now(), // String -> DateTime
+      departureDate: data['departureDate'] != null
+          ? (data['departureDate'] as Timestamp).toDate()
+          : DateTime.now(),
+      returnDate: data['returnDate'] != null
+          ? (data['returnDate'] as Timestamp).toDate()
+          : DateTime.now(),
+      completed: data['completed'] ?? false,
       addedPlaces: addedPlaces,
+
     );
   }
 }

@@ -7,6 +7,8 @@ import 'package:stour/screens/view_saved_tour.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stour/util/const.dart';
 
+import 'addPost_screen.dart';
+
 class SavedTour extends StatefulWidget {
   const SavedTour({super.key});
 
@@ -135,6 +137,32 @@ class _SavedTourState extends State<SavedTour> {
     );
   }
 
+  void _showCompleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Hoàn thành chuyến đi?"),
+        content: const Text("Bạn có muốn viết bài chia sẻ cảm nhận không?"),
+        actions: [
+          TextButton(
+            child: const Text("Bỏ qua"),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: const Text("Viết bài"),
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AddPostScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showContextMenu(BuildContext context, int index) {
     showModalBottomSheet(
         context: context,
@@ -212,6 +240,7 @@ class _SavedTourState extends State<SavedTour> {
             Navigator.pop(context);
           },
         ),
+
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -247,23 +276,47 @@ class _SavedTourState extends State<SavedTour> {
           ),
         ),
       )
-          : ListView.builder(
+          :ListView.builder(
         itemCount: savedTours.length,
         itemBuilder: (BuildContext context, int index) {
           SavedTourClass tour = savedTours[index];
           return ListTile(
-            title: Text(tour.name,
-                style: const TextStyle(fontWeight: FontWeight.w500)),
-            subtitle: Text(
-                'Được tạo vào: ${DateFormat.yMd().format(tour.timeSaved)}'),
+            title: Text(tour.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+            subtitle: Text('Được tạo vào: ${DateFormat.yMd().format(tour.timeSaved)}'),
+            trailing: IconButton(
+              icon: Icon(
+                tour.completed ? Icons.check_circle : Icons.check_circle_outline,
+                color: const Color(0xFF3B6332),
+              ),
+              tooltip: tour.completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành',
+              onPressed: () async {
+                final newStatus = !tour.completed;
+
+                try {
+                  await FirebaseFirestore.instance
+                      .collection('tours')
+                      .doc(tour.id)
+                      .update({'completed': newStatus});
+
+                  setState(() {
+                    savedTours[index].completed = newStatus;
+                  });
+
+                  if (newStatus) {
+                    _showCompleteDialog(context); // chỉ gợi ý viết bài khi đánh dấu hoàn thành
+                  }
+                } catch (e) {
+                  print('Lỗi khi cập nhật trạng thái completed: $e');
+                }
+              },
+            ),
+
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) {
-                    return ViewSavedTour(
-                      savedTour: savedTours[index],
-                    );
+                    return ViewSavedTour(savedTour: savedTours[index]);
                   },
                 ),
               );
@@ -274,6 +327,7 @@ class _SavedTourState extends State<SavedTour> {
           );
         },
       ),
+
     );
   }
 }

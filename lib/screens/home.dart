@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stour/screens/trending.dart';
@@ -12,6 +13,9 @@ import 'package:geocoding/geocoding.dart';
 import 'package:stour/widgets/search_card.dart';
 import 'package:stour/screens/home_app_bar.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../main.dart';
 
 class GoogleMapsController extends StatefulWidget {
   const GoogleMapsController({Key? key}) : super(key: key);
@@ -25,7 +29,6 @@ class _GoogleMapsControllerState extends State<GoogleMapsController> {
 
   LatLng _center = const LatLng(10.870051045334415, 106.80301118465547);
   final Set<Marker> _markers = {};
-
 
 
 

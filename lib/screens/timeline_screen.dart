@@ -276,23 +276,27 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                             String? userId = FirebaseAuth.instance.currentUser?.uid;
                                             if (userId == null) {
                                               print("User not authenticated");
-                                              return; // Early exit if user is not authenticated
+                                              return;
                                             }
 
-                                             await saveTourToFirebase(userId, SavedTourClass(
-                                              id: const Uuid().v4(), // Generate a unique ID
-                                              addedPlaces: res,
-                                              name: tourNameController.text,
-                                              timeSaved: DateTime.now(),
-                                            ));
-                                            // Clear the controller after saving
-                                            tourNameController.clear();
+                                            await saveTourToFirebase(
+                                              userId,
+                                              SavedTourClass(
+                                                id: const Uuid().v4(),
+                                                name: tourNameController.text,
+                                                addedPlaces: res,
+                                                timeSaved: DateTime.now(),
+                                                departureDate: widget.departureDate,
+                                                returnDate: widget.returnDate,
+                                                completed: false,
+                                              ),
+                                            );
 
-                                            // Close the dialog
+                                            tourNameController.clear();
                                             Navigator.of(context).pop();
 
                                             ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text('Tour saved successfully!')),
+                                              const SnackBar(content: Text('Tour saved successfully!')),
                                             );
                                           } catch (e) {
                                             ScaffoldMessenger.of(context).showSnackBar(
@@ -300,6 +304,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                             );
                                           }
                                         }
+
 
 
                                     ),
