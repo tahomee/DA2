@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
         } else if (role == 'traveler') {
           Navigator.pushReplacementNamed(context, '/home');
         } else if (role == 'admin') {
-          Navigator.pushReplacementNamed(context, '/profile');
+          Navigator.pushReplacementNamed(context, '/menuAdmin');
         } else {
           Navigator.pushReplacementNamed(context, '/signin');
         }

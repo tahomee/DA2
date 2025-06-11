@@ -18,6 +18,7 @@ import 'package:stour/screens/coupon_screen.dart';
 import 'package:stour/screens/forgot_password.dart';
 import 'package:stour/screens/dashboardBusiness_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:stour/screens/dashboardAdmin_screen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
@@ -72,7 +73,7 @@ class _MyAppState extends State<MyApp> {
       } else if (role == 'traveler') {
         Navigator.pushReplacementNamed(context, '/home');
       } else if (role == 'admin') {
-        Navigator.pushReplacementNamed(context, '/profile');
+        Navigator.pushReplacementNamed(context, '/menuAdmin');
       }
     } else {
       setState(() {
@@ -99,6 +100,7 @@ class _MyAppState extends State<MyApp> {
         '/coupon': (context) => const CouponScreen(),
         '/forgot': (context) => const ForgotPasswordScreen(),
         '/menuBusiness': (context) => const MenuBusiness(),
+        '/menuAdmin': (context) => const MenuAdmin(),
       },
     );
   }

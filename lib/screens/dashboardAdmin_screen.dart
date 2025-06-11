@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stour/screens/place_aproval_screen.dart';
 import 'package:stour/screens/trending.dart';
 import 'package:stour/util/const.dart';
 import 'package:stour/util/places.dart';
@@ -16,7 +17,8 @@ import 'package:flutter/services.dart';
 import 'package:stour/screens/coupon_business.dart';
 import 'package:stour/screens/addPlace_screen.dart';
 
-import 'business_feed_screen.dart';
+import 'manage_account_screen.dart';
+import 'manage_place_screen.dart';
 
 class GoogleMapsController extends StatefulWidget {
   const GoogleMapsController({Key? key}) : super(key: key);
@@ -112,17 +114,17 @@ class _GoogleMapsControllerState extends State<GoogleMapsController> {
   }
 }
 
-class MenuBusiness extends StatefulWidget {
-  const MenuBusiness({super.key});
+class MenuAdmin extends StatefulWidget {
+  const MenuAdmin({super.key});
   @override
-  State<MenuBusiness> createState() {
-    return _MenuBusinessState();
+  State<MenuAdmin> createState() {
+    return _MenuAdminState();
   }
 
 }
 
 
-class _MenuBusinessState extends State<MenuBusiness> {
+class _MenuAdminState extends State<MenuAdmin> {
   late Stream<List<Place>> places;
   late Stream<List<Place>> food;
 
@@ -167,58 +169,8 @@ class _MenuBusinessState extends State<MenuBusiness> {
             child: ListView(
 
               children: <Widget>[
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildMenuButton(
-                        icon: Icons.videogame_asset,
-                        label: 'Minigames',
-                        onTap: () {Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>  CouponScreen1()),
-                        );},
-                      ),
-                      _buildMenuButton(
-                        icon: Icons.feed,
-                        label: 'Feeds',
-                        onTap: ()  {Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>  BusinessFeedScreen()),
-                        );},
-                      ),
-                      // _buildMenuButton(
-                      //   icon: Icons.calendar_today,
-                      //   label: 'Thống kê',
-                      //   onTap: () {},
-                      // ),
-                      _buildMenuButton(
-                        icon: Icons.restaurant_menu,
-                        label: 'Thêm địa điểm',
-                        onTap: () {Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>  AddPlaceScreen()),
-                        );},
-                      ),
-                    ],
-                  ),
-                ),
-                const Text(
-                  'Vị Trí Hiện Tại',
-                  style: TextStyle(
-                    color: Color(0xFF3B6332),
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const SizedBox(
-                  height: 200,
-                  width: double.infinity,
-                  child: GoogleMapsController(),
-                ),
+
+
                 const SizedBox(height: 20.0),
                 StreamBuilder<List<Place>>(
                   stream: places,
@@ -263,6 +215,179 @@ class _MenuBusinessState extends State<MenuBusiness> {
                     }
                   },
                 ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 50,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Quản lí tài khoản',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3B6332),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => UserManagementScreen() ),
+                          );
+                        },
+                        child: const Text(
+                          'Xem chi tiết',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromARGB(128, 255, 209, 102),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 50,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Quản lí địa điểm',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3B6332),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PlaceManagementScreen(collectionName: 'stourplace1'),
+                            ),
+                          );
+
+                        },
+                        child: const Text(
+                          'Xem chi tiết',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromARGB(128, 255, 209, 102),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),      const SizedBox(height: 20),
+                SizedBox(
+                  height: 50,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Quản lí đặc sản',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3B6332),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PlaceManagementScreen(collectionName: 'food'),
+                            ),
+                          );
+
+                        },
+                        child: const Text(
+                          'Xem chi tiết',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromARGB(128, 255, 209, 102),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),                SizedBox(
+                  height: 50,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Đăng kí địa điểm ',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3B6332),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PlaceApprovalScreen(collectionName: 'stourplace1'),
+                            ),
+                          );
+
+                        },
+                        child: const Text(
+                          'Xem chi tiết',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromARGB(128, 255, 209, 102),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ), SizedBox(
+                  height: 50,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Đăng kí đặc sản',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3B6332),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PlaceApprovalScreen(collectionName: 'food'),
+                            ),
+                          );
+
+                        },
+                        child: const Text(
+                          'Xem chi tiết',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromARGB(128, 255, 209, 102),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 20),
                 Center(
                   child: ElevatedButton.icon(

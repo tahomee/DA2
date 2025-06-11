@@ -10,6 +10,7 @@ import '../screens/details.dart';
 Stream<List<Place>> getAllPlaceFoodStream(String collection) {
   return FirebaseFirestore.instance
       .collection(collection)
+      .where('isAccepted', isEqualTo: true)
       .snapshots()
       .map((snapshot) {
     List<Place> result = [];
@@ -31,6 +32,7 @@ Stream<List<Place>> getAllPlaceFoodStream(String collection) {
           closeTime: data['closetime'] ?? 0,
           district: data['district'] ?? '',
           openTime: data['opentime'] ?? 0,
+          isAccepted: data['isAccepted'] ?? false, // Thêm trường isAccepted
         );
 
         // Thêm nếu chưa tồn tại trong result (giống logic cũ)
@@ -82,6 +84,7 @@ Future<void> saveTourToFirebase(String userId, SavedTourClass savedTour) async {
           'closeTime': place.closeTime,
           'district': place.district,
           'city': place.city,
+          'isAccepted': place.isAccepted, // Thêm trường isAccepted
         });
       }
     }
@@ -139,13 +142,13 @@ class SearchByNameWidget extends StatelessWidget {
             return ListTile(
               title: Text(place.name),
               leading: Image.network(place.img, width: 50, height: 50, fit: BoxFit.cover),
-              subtitle: Text('${place.address} • ${place.city}'), // hoặc lịch sử nếu bạn muốn
+              subtitle: Text('${place.address} • ${place.city}'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (BuildContext context) => DetailScreen(
-                      placeToDisplay: place, // ✅ truyền đúng Place
+                      placeToDisplay: place,
                     ),
                   ),
                 );

@@ -41,7 +41,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   String? _oldImageUrl;
 
   final List<String> _placeTypes = ['Đặc Sản', 'Văn Hóa'];
-  String _selectedType = 'Đặc Sản'; // hoặc 'Văn Hóa' tùy bạn chọn mặc định
+  String _selectedType ='Văn Hóa';
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _picker = ImagePicker();
   final CloudinaryService _cloudinaryService = CloudinaryService();
@@ -173,11 +173,12 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
         'closetime': int.tryParse(_closeTimeController.text),
         'rating': _rating ?? 3.0,
         'price': int.tryParse(_priceController.text) ?? 0,
-        'history': _descriptionController.text,
+        'history': _historyController.text,
         'duration': int.tryParse(_durationController.text) ?? 0,
         'image': imageUrl ?? '',
         'updatedAt': FieldValue.serverTimestamp(),
         'status': 'active',
+        'isAccepted': false,
       };
 
       final collectionRef = _firestore.collection(collectionName);
@@ -232,7 +233,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
               _buildTextField('Quận/Huyện', _districtController),
               _buildTimeFields(),
               _buildPriceFields(),
-              _buildDescriptionField(),
+              _buildHistoryField(),
               const SizedBox(height: 10),
               _buildImagePicker(),
               const SizedBox(height: 20),
@@ -271,7 +272,8 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
       items: _placeTypes
           .map((type) => DropdownMenuItem(value: type, child: Text(type)))
           .toList(),
-      onChanged: (value) => setState(() => _selectedType = value!),
+      onChanged: (value) => setState(() => _selectedType = value ??  'Đặc Sản'),
+
       decoration: const InputDecoration(border: OutlineInputBorder()),
     );
   }
@@ -317,10 +319,10 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     return Row(
       children: [
         Expanded(
-            child: _buildTextField('Giờ mở cửa (HH:MM)', _openTimeController)),
+            child: _buildTextField('Giờ mở cửa (HH)', _openTimeController)),
         const SizedBox(width: 10),
         Expanded(child: _buildTextField(
-            'Giờ đóng cửa (HH:MM)', _closeTimeController)),
+            'Giờ đóng cửa (HH)', _closeTimeController)),
       ],
     );
   }
@@ -336,7 +338,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     );
   }
 
-  Widget _buildDescriptionField() {
+  Widget _buildHistoryField() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: TextFormField(

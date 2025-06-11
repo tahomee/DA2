@@ -8,84 +8,105 @@ import 'package:stour/util/const.dart';
 import 'addPost_screen.dart';
 import 'comment_screen.dart';
 
-class PostScreen extends StatefulWidget {
-  const PostScreen({super.key});
+class BusinessFeedScreen extends StatefulWidget {
+  const BusinessFeedScreen({super.key});
 
   @override
-  State<PostScreen> createState() => _PostScreenState();
+  State<BusinessFeedScreen> createState() => _BusinessFeedScreenState();
 }
 
-class _PostScreenState extends State<PostScreen> {
+class _BusinessFeedScreenState extends State<BusinessFeedScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _firestore.collection('posts').orderBy('createdAt', descending: true).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text(
+          'Feed',
+          style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)
 
-        if (snapshot.hasError) {
-          return Center(child: Text('Lỗi: ${snapshot.error}'));
-        }
+          ,
+        ),
+        centerTitle: true,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('posts').orderBy('createdAt', descending: true).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('Chưa có bài viết nào'));
-        }
+          if (snapshot.hasError) {
+            return Center(child: Text('Lỗi: ${snapshot.error}'));
+          }
 
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (context, index) {
-            final postData = snapshot.data!.docs[index];
-            final data = postData.data() as Map<String, dynamic>;
-            final authorId = data['authorId'] ?? '';
-            final postId = postData.id;
-            return FutureBuilder<DocumentSnapshot>(
-              future: _firestore.collection('users').doc(authorId).get(),
-              builder: (context, userSnapshot) {
-                if (userSnapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox();
-                }
-                if (userSnapshot.hasError || !userSnapshot.hasData || !userSnapshot.data!.exists) {
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('Chưa có bài viết nào'));
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              final postData = snapshot.data!.docs[index];
+              final data = postData.data() as Map<String, dynamic>;
+              final authorId = data['authorId'] ?? '';
+              final postId = postData.id;
+
+              return FutureBuilder<DocumentSnapshot>(
+                future: _firestore.collection('users').doc(authorId).get(),
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox();
+                  }
+
+                  if (userSnapshot.hasError || !userSnapshot.hasData || !userSnapshot.data!.exists) {
+                    return _buildPostItem(
+                      postId: postId,
+                      content: data['content'] ?? '',
+                      imageUrls: List<String>.from(data['imageUrls'] ?? []),
+                      author: 'Người dùng ẩn danh',
+                      timeAgo: _getTimeAgo(data['createdAt'] as Timestamp),
+                      location: data['location'] ?? '',
+                      avatarUrl: '',
+                      likes: data['likes'] ?? 0,
+                      comments: data['comments'] ?? 0,
+                      shares: data['shares'] ?? 0,
+                      authorId: authorId,
+                    );
+                  }
+
+                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+
                   return _buildPostItem(
                     postId: postId,
                     content: data['content'] ?? '',
                     imageUrls: List<String>.from(data['imageUrls'] ?? []),
-                    author: 'Người dùng ẩn danh',
+                    author: userData['username'] ?? 'Không tên',
                     timeAgo: _getTimeAgo(data['createdAt'] as Timestamp),
                     location: data['location'] ?? '',
-                    avatarUrl: '',
+                    avatarUrl: userData['avatar'] ?? '',
                     likes: data['likes'] ?? 0,
                     comments: data['comments'] ?? 0,
-                    shares: data['shares']??0,
+                    shares: data['shares'] ?? 0,
                     authorId: authorId,
                   );
-                }
-                final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-
-                return _buildPostItem(
-                  postId: postId,
-                  content: data['content'] ?? '',
-                  imageUrls: List<String>.from(data['imageUrls'] ?? []),
-                  author: userData['username'] ?? 'Không tên',
-                  timeAgo: _getTimeAgo(data['createdAt'] as Timestamp),
-                  location: data['location'] ?? '',
-                  avatarUrl: userData['avatar'] ?? '',
-                  likes: data['likes'] ?? 0,
-                  comments: data['comments'] ?? 0,
-                  shares: data['shares']??0,
-                  authorId: authorId,
-                );
-              },
-            );
-
-          },
-        );
-      },
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -207,7 +228,7 @@ class _PostScreenState extends State<PostScreen> {
                           }
                         }
                       }
-                     else if (value == "edit") {
+                      else if (value == "edit") {
                         final currentPostData = {
                           'content': content,
                           'location': location,

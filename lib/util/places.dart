@@ -13,6 +13,7 @@ class Place {
   final num closeTime;
   final String district;
   final String city;
+   bool isAccepted; // Thêm trường isAccepted
 
   Place({
     required this.id,
@@ -27,6 +28,7 @@ class Place {
     required this.city,
     required this.openTime,
     required this.closeTime,
+    required this.isAccepted,
   });
   factory Place.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -44,6 +46,7 @@ class Place {
       city: data['city'] ?? '',
       openTime: data['opentime'] ?? 0,
       closeTime: data['closetime'] ?? 0,
+      isAccepted: data['isAccepted'] ?? false, // Thêm trường isAccepted
     );
   }
 }
@@ -90,6 +93,7 @@ class SavedTourClass {
         closeTime: placeData['closeTime'] ?? 0,
         district: placeData['district'] ?? '',
         city: placeData['city'] ?? '',
+        isAccepted: placeData['isAccepted'] ?? true, // Thêm trường isAccepted
       );
 
       groupedByDay.putIfAbsent(dayIndex, () => []);

@@ -48,7 +48,7 @@ class _SignInScreenState extends State<SignInScreen> {
         } else if (role == 'traveler') {
           Navigator.pushReplacementNamed(context, '/home');
         } else if (role == 'admin') {
-          Navigator.pushReplacementNamed(context, '/profile');
+          Navigator.pushReplacementNamed(context, '/menuAdmin');
         } else {
           setState(() {
             _errorMessage = 'Vai trò không hợp lệ.';
