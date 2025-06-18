@@ -205,7 +205,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         ),
                       );
                     },
-                    child: Row(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         SvgPicture.string(

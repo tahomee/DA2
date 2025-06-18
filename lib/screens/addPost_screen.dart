@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import '../util/places.dart';
 import 'package:stour/assets/icons/send_svg.dart' as sendIcon;
+import 'package:multi_select_flutter/multi_select_flutter.dart';
+
 
 class AddPostScreen extends StatefulWidget {
   final Map<String, dynamic>? existingPost;
@@ -24,29 +26,56 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final TextEditingController _postController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final CloudinaryService _cloudinaryService = CloudinaryService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<File> _newImages = [];
   List<String> _existingImageUrls = [];
-
+  List<Map<String, dynamic>> allPlaces = [];
+  List<Map<String, dynamic>> selectedPlaces = [];
   bool _isPosting = false;
   Map<String, dynamic>? userData;
   final User? user = FirebaseAuth.instance.currentUser;
+  List<String> selectedPlaceIds = [];
+
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _fetchPlaces();
 
     if (widget.existingPost != null) {
       _postController.text = widget.existingPost!['content'] ?? '';
       _locationController.text = widget.existingPost!['location'] ?? currentLocationDetail[1];
-
       _existingImageUrls = List<String>.from(widget.existingPost!['imageUrls'] ?? []);
-    } else {
+
+      selectedPlaces = List<Map<String, dynamic>>.from(widget.existingPost!['places'] ?? []);
+    }
+    else {
       _locationController.text = currentLocationDetail[1]; // mặc định địa điểm
     }
-  }
 
+  }
+  Future<void> _fetchPlaces() async {
+    final foodSnapshot = await _firestore.collection('food').get();
+    final placeSnapshot = await _firestore.collection('stourplace1').get();
+
+    final places = [
+      ...foodSnapshot.docs.map((doc) => {
+        'id': doc.id,
+        'name': doc['name'],
+        'type': 'food',
+      }),
+      ...placeSnapshot.docs.map((doc) => {
+        'id': doc.id,
+        'name': doc['name'],
+        'type': 'stourplace1',
+      }),
+    ];
+    setState(() {
+      allPlaces = places;
+    });
+  }
   Future<void> _loadUserData() async {
     if (user != null) {
       final doc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
@@ -56,6 +85,17 @@ class _AddPostScreenState extends State<AddPostScreen> {
         });
       }
     }
+  }
+  void _togglePlaceSelection(Map<String, dynamic> place) {
+    setState(() {
+      if (selectedPlaces.any((p) => p['id'] == place['id'] && p['type'] == place['type'])) {
+        selectedPlaces.removeWhere((p) => p['id'] == place['id'] && p['type'] == place['type']);
+      } else {
+        selectedPlaces.add(place);
+      }
+
+      _locationController.text = selectedPlaces.map((p) => p['name']).join(', ');
+    });
   }
 
   Future<void> _pickImages() async {
@@ -90,7 +130,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
     });
 
     try {
-      // Upload chỉ ảnh mới
       final newImageUrls = await _cloudinaryService.uploadImages(
         _newImages.map((file) => file.path).toList(),
       );
@@ -98,51 +137,63 @@ class _AddPostScreenState extends State<AddPostScreen> {
       final allImageUrls = [..._existingImageUrls, ...newImageUrls];
 
       if (widget.existingPost != null && widget.postId != null) {
-        // Cập nhật bài viết
         await FirebaseFirestore.instance.collection('posts').doc(widget.postId).update({
           'content': _postController.text,
           'location': _locationController.text,
           'imageUrls': allImageUrls,
           'updatedAt': Timestamp.now(),
+          'places': selectedPlaces.map((p) => p['id']).toList(), // Chỉ lưu ID
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cập nhật bài viết thành công')),
         );
       } else {
-        // Tạo mới bài viết
-        final postRef = await FirebaseFirestore.instance.collection('posts').add({
+        final newPostRef = _firestore.collection('posts').doc(); // auto ID
+        final postId = newPostRef.id;
+
+        await newPostRef.set({
+          'userId': user?.uid,
           'content': _postController.text,
-          'location': _locationController.text,
           'imageUrls': allImageUrls,
+          'places': selectedPlaces.map((p) => p['id']).toList(),
+          'timestamp': FieldValue.serverTimestamp(),
           'createdAt': Timestamp.now(),
           'authorId': user?.uid,
+          'location': _locationController.text,
           'likes': 0,
           'likedBy': [],
           'comments': 0,
           'shares': 0,
+          'ccomments': [],
         });
 
         await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
-          'posts': FieldValue.arrayUnion([postRef.id])
+          'posts': FieldValue.arrayUnion([postId])
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đăng bài thành công')),
-        );
+        for (final place in selectedPlaces) {
+          final placeRef = _firestore.collection(place['type']).doc(place['id']);
+          await placeRef.update({
+            'postIds': FieldValue.arrayUnion([postId])
+          });
+        }
       }
 
-      Navigator.of(context).pop(true);
+      Navigator.pop(context);
     } catch (e) {
+      print("Lỗi khi đăng bài: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi đăng bài: $e')),
+        const SnackBar(content: Text("Đã có lỗi xảy ra. Vui lòng thử lại")),
       );
-    } finally {
-      setState(() {
-        _isPosting = false;
-      });
     }
+
+    setState(() {
+      _isPosting = false;
+    });
   }
+
+
 
   @override
   void dispose() {
@@ -216,7 +267,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
-            const Text('Địa điểm', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
+            const Text('Vị trí', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _locationController,
@@ -225,6 +276,109 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 prefixIcon: const Icon(Icons.location_on, color: Color(0xFFFFD166)),
               ),
             ),
+            const SizedBox(height: 20),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Chọn địa điểm:',style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
+            ),
+            MultiSelectDialogField<String>(
+              items: allPlaces
+                  .map((place) => MultiSelectItem<String>(place['id'], place['name']))
+                  .toList(),
+              title: const Text("Chọn địa điểm"),
+              selectedColor: Colors.green,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.grey,
+                ),
+              ),
+              buttonIcon: const Icon(
+                Icons.place,
+                color: Color(0xFF3B6332),
+              ),
+              buttonText: const Text(
+                "Chọn địa điểm",
+                style: TextStyle(
+                  color: Color(0xFF3B6332),
+                  fontSize: 16,
+                ),
+              ),
+              initialValue: selectedPlaceIds,
+              onConfirm: (List<String> selectedIds) {
+                setState(() {
+                  selectedPlaceIds = selectedIds;
+
+                  // Gợi ý để hiển thị chip
+                  selectedPlaces = allPlaces
+                      .where((place) => selectedIds.contains(place['id']))
+                      .toList();
+
+                  _locationController.text =
+                      selectedPlaces.map((e) => e['name']).join(', ');
+                });
+              },
+              chipDisplay: MultiSelectChipDisplay(
+                onTap: (item) {
+                  setState(() {
+                    selectedPlaceIds.remove(item);
+                    selectedPlaces =
+                        allPlaces.where((place) => selectedPlaceIds.contains(place['id'])).toList();
+                    _locationController.text =
+                        selectedPlaces.map((e) => e['name']).join(', ');
+                  });
+                },
+              ),
+            ),
+
+
+            // const SizedBox(height: 10),
+            //
+            // Container(
+            //   padding: const EdgeInsets.all(10),
+            //   decoration: BoxDecoration(
+            //     border: Border.all(color: Colors.grey),
+            //     borderRadius: BorderRadius.circular(10),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       const Icon(Icons.location_on, color: Color(0xFFFFD166)),
+            //       const SizedBox(width: 8),
+            //       Expanded(
+            //         child: Wrap(
+            //           spacing: 6.0,
+            //           children: selectedPlaces.map((place) {
+            //             return Chip(
+            //               label: Text(place['name']),
+            //               onDeleted: () => _togglePlaceSelection(place),
+            //             );
+            //           }).toList(),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+
+            // const SizedBox(height: 20),
+            // if (selectedPlaces.isNotEmpty)
+            //   Wrap(
+            //     spacing: 6.0,
+            //     children: selectedPlaces.map((place) {
+            //       return Chip(
+            //         label: Text(place['name']),
+            //         onDeleted: () => _togglePlaceSelection(place),
+            //       );
+            //     }).toList(),
+            //   ),
+
+          // const SizedBox(height: 8),
+          //   TextField(
+          //     controller: _locationController,
+          //     decoration: InputDecoration(
+          //       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          //       prefixIcon: const Icon(Icons.location_on, color: Color(0xFFFFD166)),
+          //     ),
+          //   ),
             const SizedBox(height: 20),
             const Text('File đính kèm', style: TextStyle(color: Color(0xFF3B6332), fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),

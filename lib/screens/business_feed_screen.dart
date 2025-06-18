@@ -376,23 +376,23 @@ class _BusinessFeedScreenState extends State<BusinessFeedScreen> {
                       ],
                     ),
                   ),
-                  // InkWell(
-                  //   onTap: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (context) => CommentScreen(postId: postId),
-                  //       ),
-                  //     );
-                  //   },
-                  //   child: Row(
-                  //     children: [
-                  //       Icon(Icons.comment_outlined, color: Constants.darkgreen),
-                  //       const SizedBox(width: 5),
-                  //       Text(comments.toString()),
-                  //     ],
-                  //   ),
-                  // ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CommentScreen(postId: postId),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Icon(Icons.comment_outlined, color: Constants.darkgreen),
+                        const SizedBox(width: 5),
+                        Text(comments.toString()),
+                      ],
+                    ),
+                  ),
 
                   InkWell(
                     onTap: () async {

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:stour/util/const.dart';
@@ -30,13 +31,44 @@ class ScheduleScreen extends StatefulWidget {
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
   List<List<Place>> res = [];
+  bool isLoading = true;
+  List<Place> loadedPlaces = [];
+  List<Place> loadedFood = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    getAllPlaceFoodStream('stourplace1').listen((placeList) {
+      setState(() {
+        loadedPlaces = placeList;
+      });
+      print("Total places loaded: ${loadedPlaces.length}");
+      checkAndExecute();
+    });
+
+    getAllPlaceFoodStream('food').listen((foodList) {
+      setState(() {
+        loadedFood = foodList;
+      });
+      print("Food places loaded: ${loadedFood.length}");
+      checkAndExecute();
+    });
+  }
+  void checkAndExecute() {
+    if (loadedPlaces.isNotEmpty && loadedFood.isNotEmpty && isLoading) {
+      res = executeAlgo();
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   void updateResultList(List<Place> newList, int idx) {
     setState(() {
       res[idx] = newList;
     });
   }
-
   int _isValid(double budget, double tmpTime, Place src) {
     bool cond1 = src.price > budget;
     bool cond2 = src.duration > tmpTime;
@@ -47,21 +79,46 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   List<List<Place>> getData() {
     List<List<Place>> locations = [];
-    for (int i = 0; i < places.length; i++) {
-      if (places[i].closeTime <
-              (widget.startTime.hour + widget.startTime.minute / 60) ||
-          places[i].openTime >
-              (widget.endTime.hour + widget.endTime.minute / 60) ||
-          places[i].city != currentLocationDetail[1]) {
+    int matched = 0;
+
+    double userStart = widget.startTime.hour + widget.startTime.minute / 60;
+    double userEnd = widget.endTime.hour + widget.endTime.minute / 60;
+
+    for (int i = 0; i < loadedPlaces.length; i++) {
+      Place place = loadedPlaces[i];
+      if (place.closeTime < userStart ||
+          place.openTime > userEnd ||
+          place.city != currentLocationDetail[1]) {
         continue;
       }
-      Place tmpFood = food[i % food.length];
-      tmpFood.id = const Uuid().v4();
 
-      locations.add([places[i], tmpFood]);
+      matched++;
+      Place tmpFood = loadedFood[i % loadedFood.length];
+      tmpFood.id = const Uuid().v4();
+      locations.add([place, tmpFood]);
     }
+
+    print("Matched places: $matched");
     return locations;
   }
+
+  // List<List<Place>> getData() {
+  //   List<List<Place>> locations = [];
+  //   for (int i = 0; i < places.length; i++) {
+  //     if (places[i].closeTime <
+  //             (widget.startTime.hour + widget.startTime.minute / 60) ||
+  //         places[i].openTime >
+  //             (widget.endTime.hour + widget.endTime.minute / 60) ||
+  //         places[i].city != currentLocationDetail[1]) {
+  //       continue;
+  //     }
+  //     Place tmpFood = food[i % food.length];
+  //     tmpFood.id = const Uuid().v4();
+  //
+  //     locations.add([places[i], tmpFood]);
+  //   }
+  //   return locations;
+  // }
 
   List<List<Place>> executeAlgo() {
     double budget = widget.maxBudget;
@@ -101,7 +158,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     TextEditingController tourNameController = TextEditingController();
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     if (res.isEmpty) {
+      print("res is empty. Calling executeAlgo()");
       res = executeAlgo();
     }
     double totalMoney = 0;

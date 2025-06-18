@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:stour/screens/placeStatistic_screen.dart';
 import 'addPlace_screen.dart';
 
 class PlaceManagementScreen extends StatelessWidget {
@@ -131,6 +132,23 @@ class PlaceManagementScreen extends StatelessWidget {
                                   }
                                 },
                               ),
+                              IconButton(
+                                icon: const Icon(Icons.bar_chart, color: Colors.orange),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PlaceStatisticsScreen(
+                                        placeId: place.id,
+                                        placeName: name,
+                                        placeAddress: address,
+                                        collectionName: collectionName,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+
                             ],
                           ),
                         ),
